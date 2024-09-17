@@ -1,0 +1,7 @@
+import:
+  - ./cicd/build/taskctl/contexts.yaml
+  - ./cicd/build/taskctl/tasks.yaml
+
+pipelines:
+  lint:
+    - task: lint:yaml

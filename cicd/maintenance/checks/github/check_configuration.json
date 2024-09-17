@@ -1,0 +1,13 @@
+{
+    "github": {
+        "owner": "ensono",
+        "dependabotPRStaleInDays": 10,
+        "dependabotPRMaxCount": 3,
+        "repositories": [
+            "stacks-java-module-parent",
+            "stacks-docker-images",
+            "stacks-cli",
+            "stacks-infrastructure-eks"
+        ]
+    }
+}

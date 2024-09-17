@@ -1,0 +1,11 @@
+parameters:
+  taskctlVersion:
+
+steps:
+  - task: Bash@3
+    displayName: "INSTALL: Taskctl"
+    inputs:
+      targetType: inline
+      script: |
+        wget https://github.com/ensono/taskctl/releases/download/v${{ parameters.TaskctlVersion }}/taskctl_${{ parameters.TaskctlVersion }}_linux_amd64.tar.gz -O /tmp/taskctl.tar.gz
+        tar zxf /tmp/taskctl.tar.gz -C /usr/local/bin taskctl
