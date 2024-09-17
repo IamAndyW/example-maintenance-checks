@@ -23,7 +23,7 @@ $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
     runtimeConfiguration = @{
         checkConfigurationFilename = ("{0}_configuration.json" -f $(Split-Path $PSCommandpath -LeafBase))
         checkName = $(Split-Path -Path $PSScriptRoot -Leaf)
-        githubToken = $env:GITHUB_PAT
+        githubToken = $env:GITHUB_TOKEN
     }
 }
 
