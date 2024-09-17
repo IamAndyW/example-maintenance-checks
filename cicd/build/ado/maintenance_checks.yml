@@ -31,8 +31,7 @@ parameters:
           - name: github
             displayName: 'GitHub'
             dependsOn: []
-            variableGroups:
-              - github
+            variableGroups: null
             tasks:
               installTaskctl: false
               powershellArguments: ''
@@ -49,7 +48,7 @@ parameters:
             displayName: 'Azure Kubernetes Service'
             dependsOn: []
             variableGroups:
-              - subscription-ensono-stacks
+              - azure-sp-creds
             tasks:
               installTaskctl: false
               powershellArguments: ''
@@ -66,21 +65,13 @@ parameters:
             displayName: 'Azure Kubernetes Service'
             dependsOn: []
             variableGroups:
-              - subscription-ensono-stacks
+              - azure-sp-creds
             tasks:
               installTaskctl: false
               powershellArguments: ''
               powershellEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               uploadCheckResults: true
-
-resources:
-  repositories:
-    - repository: maintenance-checks
-      type: github
-      endpoint: gh_iamandyw
-      name: IamAndyW/example-tgg-compliance
-      ref: main
 
 variables:
   - template: templates/variables/pipeline_variables.yml
