@@ -26,7 +26,7 @@ $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
         stageName = $env:SYSTEM_STAGENAME
         checkName = $(Split-Path -Path $PSScriptRoot -Leaf)
         digicertAPIkey = $env:DIGICERT_API_KEY
-        organisationId = $env:ORGANISATION_ID
+        digicertOrganisationId = $env:DIGICERT_ORGANISATION_ID
     }
 }
 

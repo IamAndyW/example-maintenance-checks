@@ -74,7 +74,7 @@ Describe $((Get-Culture).TextInfo.ToTitleCase($(Split-Path -Path $PSScriptRoot -
             }
 
             $baseURL = $checkConfiguration.digicert.baseURL
-            $organisationId = $runtimeConfiguration.organisationId
+            $organisationId = $runtimeConfiguration.digicertOrganisationId
         }
 
         # // START of tests //

@@ -17,16 +17,16 @@ parameters:
         displayName: 'General'
         dependsOn: ['build']
         condition: and(succeeded(), or(eq(variables.isPR, true), eq(variables.isMainBranch, true)))
-        variableGroups: null
+        variableGroups:
         jobs:
           - name: terraform
             displayName: 'Terraform'
             dependsOn: []
-            variableGroups: null
+            variableGroups:
             tasks:
               installTaskctl: false
               powershellArguments: ''
-              powershellEnvVariables: null
+              powershellEnvVariables:
               uploadCheckResults: true
           - name: github
             displayName: 'GitHub'
@@ -49,7 +49,7 @@ parameters:
           - name: azure_kubernetes_service
             displayName: 'Azure Kubernetes Service'
             dependsOn: []
-            variableGroups: null
+            variableGroups:
             tasks:
               installTaskctl: false
               powershellArguments: ''
@@ -59,7 +59,7 @@ parameters:
           - name: certificate
             displayName: 'Certificate'
             dependsOn: []
-            variableGroups: null
+            variableGroups:
             tasks:
               installTaskctl: false
               powershellArguments: ''
@@ -76,7 +76,7 @@ parameters:
           - name: azure_kubernetes_service
             displayName: 'Azure Kubernetes Service'
             dependsOn: []
-            variableGroups: null
+            variableGroups:
             tasks:
               installTaskctl: false
               powershellArguments: ''
