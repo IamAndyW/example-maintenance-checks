@@ -2,7 +2,8 @@
     This is the entrypoint into the maintenance check
     The validation could be directly in this file or via a testing framwework such as Pester - https://pester.dev/
 
-    All the test code is in the filename 'pester.ps1'
+    Configuration => check_configuration.json
+    Test code => pester.ps1
 #>
 
 $ErrorActionPreference = "Stop"
@@ -27,7 +28,7 @@ $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
     }
 }
 
-# Pester configuration
+# Pester configuration - https://pester.dev/docs/usage/configuration
 $script:pesterConfiguration = [PesterConfiguration] @{
     Run = @{
         Container = $pesterContainer

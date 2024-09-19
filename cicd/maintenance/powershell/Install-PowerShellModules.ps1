@@ -6,7 +6,7 @@ param(
 )
 
 foreach ($module in $modules) {
-    Write-Host ("Module: {0}" -f $module)
+    Write-Host ("`nModule: {0}" -f $module)
     if ($null -eq (Get-Module -Name $module -ListAvailable)) {
         Write-Host ("Installing module") -ForegroundColor Yellow
         Install-Module -Name $module -Scope CurrentUser -Repository PSGallery -Force

@@ -39,3 +39,6 @@ terraform.rc
 
 # Pester check results
 check_results.xml
+
+# custom
+env.ps1

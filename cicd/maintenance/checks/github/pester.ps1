@@ -14,7 +14,7 @@ BeforeDiscovery {
         throw ("Missing configuration file: {0}" -f $checkConfigurationFilename)
     }
 
-    $script:checkConfiguration = (Get-Content -Path $checkConfigurationFilename |
+    $checkConfiguration = (Get-Content -Path $checkConfigurationFilename |
         ConvertFrom-Json -Depth 99).$checkName
     
     if ($null -eq $checkConfiguration) {
@@ -25,14 +25,12 @@ BeforeDiscovery {
     . ../../powershell/Install-PowerShellModules.ps1 -modules ("PowerShellForGitHub")
     
     # GitHub authentication
-    if (-not [string]::IsNullOrEmpty($runtimeConfiguration.githubToken )) {
-        $secureString = ($runtimeConfiguration.githubToken | ConvertTo-SecureString -AsPlainText -Force)
-        $credential = New-Object System.Management.Automation.PSCredential "username is ignored", $secureString
-        Set-GitHubAuthentication -Credential $credential -SessionOnly
-    }
+    $secureString = ($runtimeConfiguration.githubToken | ConvertTo-SecureString -AsPlainText -Force)
+    $credential = New-Object System.Management.Automation.PSCredential "username is ignored", $secureString
+    Set-GitHubAuthentication -Credential $credential -SessionOnly
 
     # building the discovery object
-    $script:discovery = [System.Collections.ArrayList]@()
+    $discovery = [System.Collections.ArrayList]@()
 
     foreach ($repository in $checkConfiguration.repositories) {
         $pullRequests = Get-GitHubPullRequest -OwnerName $checkConfiguration.owner -RepositoryName $repository |
@@ -59,18 +57,21 @@ Describe $((Get-Culture).TextInfo.ToTitleCase($checkName.Replace('_', ' '))) {
     Context "Repository: '<_.repositoryName>'" -ForEach $discovery {
 
         BeforeAll {
+            Write-Host "`n"
+
             $dateThreshold = (Get-Date).AddDays(-$_.dependabotPRStaleInDays)
             $dependabotPRMaxCount = $_.dependabotPRMaxCount
         }
 
-        It "Dependabot PR '<_.title>' 'created at' date should not be older than $dependabotPRStaleInDays days" -ForEach $_.pullRequests {
+        # // START of tests //
+        It "Dependabot PR '<_.title>' creation date should not be older than $dependabotPRStaleInDays days" -ForEach $_.pullRequests {
             $_.created_at -lt $dateThreshold | Should -Be $false
         }
 
         It "The number of Dependabot PRs should be less than or equal to $dependabotPRMaxCount" {
-
             $_.pullRequests.count | Should -BeLessOrEqual $dependabotPRMaxCount
         }
+        # // END of tests //
 
         AfterAll {
             Write-Host ("`nGitHub Pull Request link: http://github.com/{0}/{1}/pulls`n" -f $_.owner, $_.repositoryName)

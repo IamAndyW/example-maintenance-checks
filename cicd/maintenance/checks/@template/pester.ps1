@@ -6,11 +6,13 @@ param (
 BeforeDiscovery {} 
 
 Describe $((Get-Culture).TextInfo.ToTitleCase($(Split-Path -Path $PSScriptRoot -Leaf).Replace('_', ' '))) {
-
+    
     Context "TODO" {
+        
+        # // START of tests //
+        It "TODO" {
 
-        BeforeAll {}
-
-        It "Should TODO" {}
+        }
+        # // END of tests //
     }
 }

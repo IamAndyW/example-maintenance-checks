@@ -37,19 +37,29 @@ parameters:
               installTaskctl: false
               powershellArguments: ''
               powershellEnvVariables:
-                GITHUB_PAT: $(GITHUB_TOKEN)
+                GITHUB_TOKEN: $(GITHUB_TOKEN)
               uploadCheckResults: true
       - name: nonprod
         displayName: 'NONPROD'
         dependsOn: ['build']
         condition: and(succeeded(), or(eq(variables.isPR, true), eq(variables.isMainBranch, true)))
-        variableGroups: null
+        variableGroups:
+          - azure-sp-creds
         jobs:
           - name: azure_kubernetes_service
             displayName: 'Azure Kubernetes Service'
             dependsOn: []
-            variableGroups:
-              - azure-sp-creds
+            variableGroups: null
+            tasks:
+              installTaskctl: false
+              powershellArguments: ''
+              powershellEnvVariables:
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+              uploadCheckResults: true
+          - name: certificate
+            displayName: 'Certificate'
+            dependsOn: []
+            variableGroups: null
             tasks:
               installTaskctl: false
               powershellArguments: ''
@@ -60,17 +70,29 @@ parameters:
         displayName: 'PROD'
         dependsOn: ['build']
         condition: and(succeeded(), eq(variables.isMainBranch, true))
-        variableGroups: null
+        variableGroups:
+          - azure-sp-creds
         jobs:
           - name: azure_kubernetes_service
             displayName: 'Azure Kubernetes Service'
             dependsOn: []
-            variableGroups:
-              - azure-sp-creds
+            variableGroups: null
             tasks:
               installTaskctl: false
               powershellArguments: ''
               powershellEnvVariables:
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+              uploadCheckResults: true
+          - name: certificate
+            displayName: 'Certificate'
+            dependsOn: []
+            variableGroups:
+              - digicert
+            tasks:
+              installTaskctl: false
+              powershellArguments: ''
+              powershellEnvVariables:
+                DIGICERT_API_KEY: $(DIGICERT_API_KEY)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               uploadCheckResults: true
 
