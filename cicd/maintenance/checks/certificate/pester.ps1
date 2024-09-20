@@ -180,10 +180,10 @@ Describe $((Get-Culture).TextInfo.ToTitleCase($(Split-Path -Path $PSScriptRoot -
             catch {
                 throw ("Cannot find resource: '{0}' in resource group" -f $resourceName, $resourceGroupName)
             }
+
+            $keyVaultSecretId = $azureResource.SslCertificates.KeyVaultSecretId
             
-            if ([string]::IsNullOrEmpty($azureResource.SslCertificates.KeyVaultSecretId)) {
-                $keyVaultSecretId = $null
-                
+            if ([string]::IsNullOrEmpty($keyVaultSecretId)) {
                 $certificateBytes = [Convert]::FromBase64String($azureResource.SslCertificates.PublicCertData)
                 $p7b = New-Object System.Security.Cryptography.Pkcs.SignedCms
                 $p7b.Decode($certificateBytes)
@@ -193,7 +193,6 @@ Describe $((Get-Culture).TextInfo.ToTitleCase($(Split-Path -Path $PSScriptRoot -
                 # installing dependencies
                 . ../../powershell/Install-PowerShellModules.ps1 -modules ("Az.KeyVault")
                 
-                $keyVaultSecretId = $azureResource.SslCertificates.KeyVaultSecretId
                 $elements = $keyVaultSecretId.Split('/')
                 $certificateExpiryDate = (Get-AzKeyVaultCertificate -VaultName $elements[2].Split('.')[0] -Name $elements[4]).Expires
             }       

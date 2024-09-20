@@ -9,20 +9,11 @@ $ErrorActionPreference = "Stop"
 
 Push-Location -Path $PSScriptRoot
 
+# installing dependencies
+. ../../powershell/Install-PowerShellModules.ps1 -modules ("Pester")
+
 # setting variables
 $script:pesterFilename = 'pester.ps1'
-
-if([string]::IsNullOrEmpty($env:SYSTEM_STAGENAME)) {
-    $script:stageName = "NONPROD"
-} else {
-    $script:stageName = $env:SYSTEM_STAGENAME
-}
-
-if([string]::IsNullOrEmpty($env:MAINTENANCE_CHECK_RESULT_FILENAME)) {
-    $script:pesterOutputPath = ("{0}/{1}" -f $PSScriptRoot, "check_results.xml")
-} else {
-    $script:pesterOutputPath = ("{0}/{1}" -f $PSScriptRoot, $env:MAINTENANCE_CHECK_RESULT_FILENAME) 
-}
 
 # runtime configuration available in the discovery and run phases of Pester
 $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
@@ -41,7 +32,7 @@ $script:pesterConfiguration = [PesterConfiguration] @{
     TestResult = @{
         Enabled      = $true
         OutputFormat = "NUnitXml"
-        OutputPath   = $pesterOutputPath
+        OutputPath   = ("{0}/{1}" -f $PSScriptRoot, $env:MAINTENANCE_CHECK_RESULT_FILENAME)
     }
 }
 
