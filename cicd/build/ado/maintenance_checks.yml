@@ -146,6 +146,7 @@ stages:
                   - ${{ if job.variableGroups }}:
                       - ${{ each group in job.variableGroups}}:
                           - group: ${{ group }}
+                  - template: templates/variables/${{ job.name }}_variables.yml
                   - name: working_directory
                     value: '$(maintenance_checks_directory)/${{ job.name }}'
 

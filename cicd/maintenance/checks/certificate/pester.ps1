@@ -120,7 +120,7 @@ Describe $((Get-Culture).TextInfo.ToTitleCase($(Split-Path -Path $PSScriptRoot -
                 Out-String |
                     ConvertFrom-Json -Depth 99
 
-            ($response.validations | Where-Object {$_.type -eq "ov"}).validated_until -gt (Get-Date).AddDays($checkConfiguration.digicert.ordersExpiringRenewBeforeInDays) | Should -Be $true
+            ($response.validations | Where-Object {$_.type -eq "ov"}).validated_until -gt $runtimeConfiguration.checkDateTime.AddDays($checkConfiguration.digicert.ordersExpiringRenewBeforeInDays) | Should -Be $true
         }
 
         It "If there are expirying orders within 60 days, the total available funds in USD should be enough to cover certificate renewal" {
@@ -206,12 +206,12 @@ Describe $((Get-Culture).TextInfo.ToTitleCase($(Split-Path -Path $PSScriptRoot -
         }
         
         It "The Ssl certificate should not be in the renewal window (now + <_.certificateRenewalBeforeInDays> days)" {    
-            $certificateExpiryDate -gt (Get-Date).AddDays($_.certificateRenewalBeforeInDays) | Should -Be $true
+            $certificateExpiryDate -gt $runtimeConfiguration.checkDateTime.AddDays($_.certificateRenewalBeforeInDays) | Should -Be $true
         }
         # // END of tests //
 
         AfterAll {
-            Write-Host ("`nApplication Gateway certificate expiry date: {0}`n" -f $certificateExpiryDate.ToString("dd/MM/yyyy HH:mm:ss"))
+            Write-Host ("`nApplication Gateway certificate expiry date: {0}`n" -f $certificateExpiryDate.ToString($runtimeConfiguration.checkDateFormat))
             
             Clear-Variable -Name "resourceGroupName"
             Clear-Variable -Name "resourceName"

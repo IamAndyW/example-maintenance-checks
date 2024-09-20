@@ -59,7 +59,7 @@ Describe $((Get-Culture).TextInfo.ToTitleCase($checkName.Replace('_', ' '))) {
         BeforeAll {
             Write-Host "`n"
 
-            $dateThreshold = (Get-Date).AddDays(-$_.dependabotPRStaleInDays)
+            $dateThreshold = $runtimeConfiguration.checkDateTime.AddDays(-$_.dependabotPRStaleInDays)
             $dependabotPRMaxCount = $_.dependabotPRMaxCount
         }
 

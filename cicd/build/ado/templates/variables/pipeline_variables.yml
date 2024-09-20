@@ -15,3 +15,5 @@ variables:
     value: '$(maintenance_script_basename).ps1'
   - name: maintenance_check_result_filename
     value: '$(maintenance_script_basename)_results.xml'
+  - name: maintenance_check_date_format
+    value: 'dd/MM/yyyy HH:mm:ss'
