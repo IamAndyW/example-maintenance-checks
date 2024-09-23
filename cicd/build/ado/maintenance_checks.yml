@@ -25,7 +25,6 @@ parameters:
             variableGroups:
             tasks:
               installTaskctl: false
-              powershellArguments: ''
               powershellEnvVariables:
               uploadCheckResults: true
           - name: github
@@ -35,7 +34,6 @@ parameters:
               - github-creds
             tasks:
               installTaskctl: false
-              powershellArguments: ''
               powershellEnvVariables:
                 GITHUB_TOKEN: $(GITHUB_TOKEN)
               uploadCheckResults: true
@@ -52,7 +50,6 @@ parameters:
             variableGroups:
             tasks:
               installTaskctl: false
-              powershellArguments: ''
               powershellEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               uploadCheckResults: true
@@ -62,7 +59,6 @@ parameters:
             variableGroups:
             tasks:
               installTaskctl: false
-              powershellArguments: ''
               powershellEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               uploadCheckResults: true
@@ -79,7 +75,6 @@ parameters:
             variableGroups:
             tasks:
               installTaskctl: false
-              powershellArguments: ''
               powershellEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               uploadCheckResults: true
@@ -90,7 +85,6 @@ parameters:
               - digicert
             tasks:
               installTaskctl: false
-              powershellArguments: ''
               powershellEnvVariables:
                 DIGICERT_API_KEY: $(DIGICERT_API_KEY)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
@@ -148,7 +142,7 @@ stages:
                           - group: ${{ group }}
                   - template: templates/variables/${{ job.name }}_variables.yml
                   - name: working_directory
-                    value: '$(maintenance_checks_directory)/${{ job.name }}'
+                    value: '$(maintenance_checks_directory)'
 
                 steps:
                   - ${{ if eq(job.tasks.installTaskctl, true) }}:
@@ -161,8 +155,7 @@ stages:
                     inputs:
                       targetType: 'filePath'
                       workingDirectory: $(working_directory)
-                      filePath: '$(working_directory)/$(maintenance_check_powershell_filename)'
-                      arguments: '$ {{ job.tasks.powershellArguments }}'
+                      filePath: '$(working_directory)/$(maintenance_check_powershell_entry_filename)'
                     env:
                       ${{ if job.tasks.powershellEnvVariables }}:
                         ${{ each variable in job.tasks.powershellEnvVariables }}:

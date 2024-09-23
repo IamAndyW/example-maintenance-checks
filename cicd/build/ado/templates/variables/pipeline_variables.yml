@@ -11,6 +11,8 @@ variables:
     value: '$(maintenance_directory)/checks'
   - name: maintenance_script_basename
     value: 'check'
+  - name: maintenance_check_powershell_entry_filename
+    value: '$(maintenance_script_basename)_entrypoint.ps1'
   - name: maintenance_check_powershell_filename
     value: '$(maintenance_script_basename).ps1'
   - name: maintenance_check_result_filename

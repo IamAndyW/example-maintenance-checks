@@ -18,7 +18,7 @@ BeforeDiscovery {
         ConvertFrom-Json -Depth 99).$checkName
     
     if ($null -eq $checkConfiguration) {
-        throw ("Cannot find configuration: '{0}' in file: '{1}'" -f $stageName, $checkConfigurationFilename)
+        throw ("Cannot find configuration in file: '{0}'" -f $checkConfigurationFilename)
     }
 
     # installing dependencies
