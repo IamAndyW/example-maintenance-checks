@@ -169,5 +169,5 @@ stages:
                         inputs:
                           testRunTitle: '${{ stage.displayName }} - ${{ job.displayName }}'
                           testResultsFormat: 'NUnit'
-                          testResultsFiles: '$(working_directory)/$(maintenance_check_result_filename)'
+                          testResultsFiles: '$(working_directory)/${{ job.name }}/$(maintenance_check_result_filename)'
                           failTaskOnFailureToPublishResults: true
