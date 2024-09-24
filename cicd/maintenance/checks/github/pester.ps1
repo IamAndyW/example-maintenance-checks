@@ -52,7 +52,7 @@ BeforeDiscovery {
     }
 }
 
-Describe $((Get-Culture).TextInfo.ToTitleCase($checkName.Replace('_', ' '))) {
+Describe $runtimeConfiguration.checkDisplayName {
 
     Context "Repository: '<_.repositoryName>'" -ForEach $discovery {
 
@@ -63,7 +63,6 @@ Describe $((Get-Culture).TextInfo.ToTitleCase($checkName.Replace('_', ' '))) {
             $dependabotPRMaxCount = $_.dependabotPRMaxCount
         }
 
-        # // START of tests //
         It "Dependabot PR '<_.title>' creation date should not be older than $dependabotPRStaleInDays days" -ForEach $_.pullRequests {
             $_.created_at -lt $dateThreshold | Should -Be $false
         }
@@ -71,7 +70,6 @@ Describe $((Get-Culture).TextInfo.ToTitleCase($checkName.Replace('_', ' '))) {
         It "The number of Dependabot PRs should be less than or equal to $dependabotPRMaxCount" {
             $_.pullRequests.count | Should -BeLessOrEqual $dependabotPRMaxCount
         }
-        # // END of tests //
 
         AfterAll {
             Write-Host ("`nGitHub Pull Request link: http://github.com/{0}/{1}/pulls`n" -f $_.owner, $_.repositoryName)

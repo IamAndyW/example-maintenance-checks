@@ -2,7 +2,7 @@
     "stages": [
         {
             "name": "nonprod",
-            "certificate": {
+            "azure_application_gateway": {
                 "certificateRenewalBeforeInDays": 10,
                 "applicationGateways": [
                     {
@@ -14,21 +14,14 @@
         },
         {
             "name": "prod",
-            "certificate": {
+            "azure_application_gateway": {
                 "certificateRenewalBeforeInDays": 10,
                 "applicationGateways": [
                     {
                         "resourceGroupName": "ed-stacks-prod-euw-core",
                         "resourceName": "ed-stacks-prod-euw-core"
                     }
-                ],
-                "digicert": {
-                    "organisationContact": "Milan Juza",
-                    "technicalContact": "Colm Campbell",
-                    "ordersExpiringRenewBeforeInDays": 30,
-                    "totalAvailableFundsMinInUSD": 1000,
-                    "baseURL": "https://www.digicert.com/services/v2"
-                }
+                ]
             }
         }
     ]

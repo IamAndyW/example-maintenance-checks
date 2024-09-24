@@ -37,51 +37,55 @@ BeforeDiscovery {
     }
 }
 
-BeforeAll {
-    # Azure authentication
-    . ../../powershell/Connect-Azure.ps1
 
-    # installing dependencies
-    . ../../powershell/Install-PowerShellModules.ps1 -modules ("Az.Aks")
-}
-
-Describe $runtimeConfiguration.checkDisplayName -ForEach $discovery {
-
+Describe $((Get-Culture).TextInfo.ToTitleCase($checkName.Replace('_', ' '))) {
+    
     BeforeAll {
-        $resourceGroupName = $_.resourceGroupName
-        $resourceName = $_.resourceName
+        Write-Host "`n"
 
-        try {
-            $azureResource = Get-AzAksCluster -ResourceGroupName $resourceGroupName -Name $resourceName
-        }
-        catch {
-            throw ("Cannot find resource: '{0}' in resource group" -f $resourceName, $resourceGroupName)
-        }      
-    }
-
-    Context "Provisioning: '<_.resourceGroupName>/<_.resourceName>'" {
-
-        It "Should have 'ProvisioningState' of 'Succeeded'" {
-            $azureResource.ProvisioningState | Should -Be "Succeeded"
-        }
+        # Azure authentication
+        . ../../powershell/Connect-Azure.ps1
         
+        # installing dependencies
+        . ../../powershell/Install-PowerShellModules.ps1 -modules ("Az.Aks")
     }
 
-    Context "Version: '<_.resourceGroupName>/<_.resourceName>'" {
+    Context "Cluster: '<_.resourceGroupName>/<_.resourceName>'" -ForEach $discovery {
 
         BeforeAll {
+            Write-Host "`n"
+
+            $resourceGroupName = $_.resourceGroupName
+            $resourceName = $_.resourceName
+
+            try {
+                $azureResource = Get-AzAksCluster -ResourceGroupName $resourceGroupName -Name $resourceName
+            }
+            catch {
+                throw ("Cannot find resource: '{0}' in resource group" -f $resourceName, $resourceGroupName)
+            }
+
             $currentVersion = $azureResource.KubernetesVersion
             $aksVersionThreshold = $_.aksVersionThreshold
             
             $targetVersions = (Get-AzAksVersion -Location $azureResource.Location |
             Where-Object {$_.IsPreview -ne $true} | Sort-Object { $_.OrchestratorVersion -as [version] } -Descending).OrchestratorVersion |
                 Select-Object -First $aksVersionThreshold
+
+            Write-Host "`n"
         }
 
+        # // START of tests //
+        It "Should have 'ProvisioningState' of 'Succeeded'" {
+            $azureResource.ProvisioningState | Should -Be "Succeeded"
+        }        
+        
         It "The current version should be within target versions" {       
             $targetVersions -contains $currentVersion | Should -Be $true
         }
+        # // END of tests //
 
+        
         AfterAll {
             Write-Host ("`nCurrent version {0}" -f $currentVersion)
 
@@ -89,18 +93,13 @@ Describe $runtimeConfiguration.checkDisplayName -ForEach $discovery {
             foreach ($version in $targetVersions) {
                 Write-Host $version
             }
-        
-            Write-Host "`n"
 
+            Clear-Variable -Name "resourceGroupName"
+            Clear-Variable -Name "resourceName"
+            Clear-Variable -Name "azureResource"
             Clear-Variable -Name "currentVersion"
             Clear-Variable -Name "aksVersionThreshold"
             Clear-Variable -Name "targetVersions"
         }
-    }
-
-    AfterAll {
-        Clear-Variable -Name "resourceGroupName"
-        Clear-Variable -Name "resourceName"
-        Clear-Variable -Name "azureResource"
     }
 }

@@ -26,9 +26,9 @@ BeforeDiscovery {
     # building the discovery object
     $discovery = [System.Collections.ArrayList]@()
 
-    foreach ($resource in $checkConfiguration.clusters) {
+    foreach ($resource in $checkConfiguration.applicationGateways) {
         $discoveryObject = [ordered] @{
-            aksVersionThreshold = $checkConfiguration.aksVersionThreshold
+            certificateRenewalBeforeInDays = $checkConfiguration.certificateRenewalBeforeInDays
             resourceGroupName = $resource.resourceGroupName
             resourceName = $resource.resourceName
         }
@@ -42,7 +42,7 @@ BeforeAll {
     . ../../powershell/Connect-Azure.ps1
 
     # installing dependencies
-    . ../../powershell/Install-PowerShellModules.ps1 -modules ("Az.Aks")
+    . ../../powershell/Install-PowerShellModules.ps1 -modules ("Az.Network")
 }
 
 Describe $runtimeConfiguration.checkDisplayName -ForEach $discovery {
@@ -52,11 +52,27 @@ Describe $runtimeConfiguration.checkDisplayName -ForEach $discovery {
         $resourceName = $_.resourceName
 
         try {
-            $azureResource = Get-AzAksCluster -ResourceGroupName $resourceGroupName -Name $resourceName
+            $azureResource = Get-AzApplicationGateway -ResourceGroupName $resourceGroupName -Name $resourceName
         }
         catch {
             throw ("Cannot find resource: '{0}' in resource group" -f $resourceName, $resourceGroupName)
-        }      
+        }
+
+        $keyVaultSecretId = $azureResource.SslCertificates.KeyVaultSecretId
+        
+        if ([string]::IsNullOrEmpty($keyVaultSecretId)) {
+            $certificateBytes = [Convert]::FromBase64String($azureResource.SslCertificates.PublicCertData)
+            $p7b = New-Object System.Security.Cryptography.Pkcs.SignedCms
+            $p7b.Decode($certificateBytes)
+            $certificateExpiryDate = $p7b.Certificates[0].NotAfter
+
+        } else {
+            # installing dependencies
+            . ../../powershell/Install-PowerShellModules.ps1 -modules ("Az.KeyVault")
+            
+            $elements = $keyVaultSecretId.Split('/')
+            $certificateExpiryDate = (Get-AzKeyVaultCertificate -VaultName $elements[2].Split('.')[0] -Name $elements[4]).Expires
+        }       
     }
 
     Context "Provisioning: '<_.resourceGroupName>/<_.resourceName>'" {
@@ -67,34 +83,14 @@ Describe $runtimeConfiguration.checkDisplayName -ForEach $discovery {
         
     }
 
-    Context "Version: '<_.resourceGroupName>/<_.resourceName>'" {
+    Context "Certificate: '<_.resourceGroupName>/<_.resourceName>'" {
 
-        BeforeAll {
-            $currentVersion = $azureResource.KubernetesVersion
-            $aksVersionThreshold = $_.aksVersionThreshold
-            
-            $targetVersions = (Get-AzAksVersion -Location $azureResource.Location |
-            Where-Object {$_.IsPreview -ne $true} | Sort-Object { $_.OrchestratorVersion -as [version] } -Descending).OrchestratorVersion |
-                Select-Object -First $aksVersionThreshold
-        }
-
-        It "The current version should be within target versions" {       
-            $targetVersions -contains $currentVersion | Should -Be $true
+        It "The Ssl certificate should not be in the renewal window (now + <_.certificateRenewalBeforeInDays> days)" {    
+            $certificateExpiryDate -gt $runtimeConfiguration.checkDateTime.AddDays($_.certificateRenewalBeforeInDays) | Should -Be $true
         }
 
         AfterAll {
-            Write-Host ("`nCurrent version {0}" -f $currentVersion)
-
-            Write-Host("`nTarget versions (N-{0}) for {1}`n" -f $aksVersionThreshold, $azureResource.Location)
-            foreach ($version in $targetVersions) {
-                Write-Host $version
-            }
-        
-            Write-Host "`n"
-
-            Clear-Variable -Name "currentVersion"
-            Clear-Variable -Name "aksVersionThreshold"
-            Clear-Variable -Name "targetVersions"
+            Write-Host ("`nApplication Gateway certificate expiry date: {0}`n" -f $certificateExpiryDate.ToString($runtimeConfiguration.checkDateFormat))
         }
     }
 
@@ -102,5 +98,9 @@ Describe $runtimeConfiguration.checkDisplayName -ForEach $discovery {
         Clear-Variable -Name "resourceGroupName"
         Clear-Variable -Name "resourceName"
         Clear-Variable -Name "azureResource"
+        Clear-Variable -Name "keyVaultSecretId"
+        Clear-Variable -Name "certificateBytes" -ErrorAction Continue
+        Clear-Variable -Name "p7b" -ErrorAction Continue
+        Clear-Variable -Name "certificateExpiryDate"
     }
 }

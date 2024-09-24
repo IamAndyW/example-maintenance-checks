@@ -1,0 +1,9 @@
+{
+    "digicert": {
+        "organisationContact": "Milan Juza",
+        "technicalContact": "Colm Campbell",
+        "ordersExpiringRenewBeforeInDays": 30,
+        "totalAvailableFundsMinInUSD": 1000,
+        "baseURL": "https://www.digicert.com/services/v2"
+    }
+}

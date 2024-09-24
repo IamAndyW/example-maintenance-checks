@@ -13,7 +13,10 @@ Push-Location -Path $PSScriptRoot
 # setting variables
 $script:pesterFilename = 'pester.ps1'
 
-# runtime configuration available in the discovery and run phases of Pester
+# runtime configuration available in the discovery and run phases of Peste
+$runtimeConfiguration.Add('digicertAPIkey', $env:DIGICERT_API_KEY)
+$runtimeConfiguration.Add('digicertOrganisationId', $env:DIGICERT_ORGANISATION_ID)
+
 $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
     runtimeConfiguration = $runtimeConfiguration
 }
@@ -22,7 +25,7 @@ $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
 $script:pesterConfiguration = [PesterConfiguration] @{
     Run = @{
         Container = $pesterContainer
-    }
+    }    
     Output = @{
         Verbosity = 'Detailed'
     }

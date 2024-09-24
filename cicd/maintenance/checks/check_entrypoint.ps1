@@ -28,6 +28,7 @@ if ($skipUntilDateTime -gt $checkDateTime) {
     $runtimeConfiguration = @{
         checkConfigurationFilename = ("{0}_configuration.json" -f $env:MAINTENANCE_SCRIPT_BASENAME)
         checkName = $env:SYSTEM_PHASENAME
+        checkDisplayName = $env:SYSTEM_PHASEDISPLAYNAME
         checkDateFormat = $env:MAINTENANCE_CHECK_DATE_FORMAT
         checkDateTime = $checkDateTime
         stageName = $env:SYSTEM_STAGENAME

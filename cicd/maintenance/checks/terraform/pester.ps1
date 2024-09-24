@@ -33,7 +33,7 @@ BeforeDiscovery {
     }
 } 
 
-Describe $((Get-Culture).TextInfo.ToTitleCase($(Split-Path -Path $PSScriptRoot -Leaf).Replace('_', ' '))) {
+Describe $runtimeConfiguration.checkDisplayName {
 
     BeforeAll {
         $testFilePath = "./version.tf"
@@ -50,12 +50,10 @@ Describe $((Get-Culture).TextInfo.ToTitleCase($(Split-Path -Path $PSScriptRoot -
 "@ | Set-Content -Path $testFilePath -Force
         }
 
-        # // START of tests //
         It "'terraform init' should return an Exit Code of 0" {            
             terraform init
             $LASTEXITCODE | Should -Be 0 
         }
-        # // END of tests //
 
         AfterEach {
             Remove-Item -Path $testFilePath -Force
