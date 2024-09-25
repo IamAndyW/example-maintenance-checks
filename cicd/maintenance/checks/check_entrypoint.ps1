@@ -25,8 +25,8 @@ if ($skipUntilDateTime -gt $checkDateTime) {
 } else {
 
     # global runtime configuration
-    $runtimeConfiguration = @{
-        checkConfigurationFilename = ("{0}_configuration.json" -f $env:MAINTENANCE_SCRIPT_BASENAME)
+    $externalConfiguration = @{
+        checkConfigurationFilename = "configuration.json"
         checkName = $env:SYSTEM_PHASENAME
         checkDisplayName = $env:SYSTEM_PHASEDISPLAYNAME
         checkDateFormat = $env:MAINTENANCE_CHECK_DATE_FORMAT
@@ -34,7 +34,7 @@ if ($skipUntilDateTime -gt $checkDateTime) {
         stageName = $env:SYSTEM_STAGENAME
     }
 
-    & ("./{0}/{1}" -f $runtimeConfiguration.checkName, $env:MAINTENANCE_CHECK_POWERSHELL_FILENAME)
+    & ("./{0}/{1}" -f $externalConfiguration.checkName, $env:MAINTENANCE_CHECK_POWERSHELL_FILENAME)
 }
 
 Pop-Location

@@ -13,11 +13,11 @@ Push-Location -Path $PSScriptRoot
 # setting variables
 $script:pesterFilename = 'pester.ps1'
 
-# runtime configuration available in the discovery and run phases of Peste
-$runtimeConfiguration.Add('githubToken', $env:GITHUB_TOKEN)
+# configuration available in the discovery and run phases of Pester
+$externalConfiguration.Add('githubToken', $env:GITHUB_TOKEN)
 
 $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
-    runtimeConfiguration = $runtimeConfiguration
+    externalConfiguration = $externalConfiguration
 }
 
 # Pester configuration - https://pester.dev/docs/usage/configuration

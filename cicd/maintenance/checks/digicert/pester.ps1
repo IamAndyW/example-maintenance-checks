@@ -1,39 +1,39 @@
 param (
     [Parameter(Mandatory = $true)]
-    [hashtable] $runtimeConfiguration
+    [hashtable] $externalConfiguration
 )
 
-Describe $runtimeConfiguration.checkDisplayName {
+Describe $externalConfiguration.checkDisplayName {
 
     BeforeAll {
         Write-Host "`n"
 
-        $checkConfigurationFilename = $runtimeConfiguration.checkConfigurationFilename
-        $stageName = $runtimeConfiguration.stageName
-        $checkName = $runtimeConfiguration.checkName
+        $internalConfigurationFilename = $externalConfiguration.checkConfigurationFilename
+        $stageName = $externalConfiguration.stageName
+        $checkName = $externalConfiguration.checkName
 
         # loading check configuration
-        if (-not (Test-Path -Path $checkConfigurationFilename)) {
-            throw ("Missing configuration file: {0}" -f $checkConfigurationFilename)
+        if (-not (Test-Path -Path $internalConfigurationFilename)) {
+            throw ("Missing configuration file: {0}" -f $internalConfigurationFilename)
         }
 
-        $checkConfiguration = (Get-Content -Path $checkConfigurationFilename |
+        $internalConfiguration = (Get-Content -Path $internalConfigurationFilename |
             ConvertFrom-Json -Depth 99).$checkName
         
-        if ($null -eq $checkConfiguration) {
-            throw ("Cannot find configuration in file: '{0}'" -f $checkConfigurationFilename)
+        if ($null -eq $internalConfiguration) {
+            throw ("Cannot find configuration in file: '{0}'" -f $internalConfigurationFilename)
         }
 
         $webRequestParameters = @{
             "method" = "GET"
             "headers" = @{
                 "content-type" = "application/json"
-                "X-DC-DEVKEY" = $runtimeConfiguration.digicertAPIkey
+                "X-DC-DEVKEY" = $externalConfiguration.digicertAPIkey
             }
         }
 
-        $baseURL = $checkConfiguration.baseURL
-        $organisationId = $runtimeConfiguration.digicertOrganisationId
+        $baseURL = $internalConfiguration.baseURL
+        $organisationId = $externalConfiguration.digicertOrganisationId
     }
 
     Context "Organisation" {
@@ -57,8 +57,8 @@ Describe $runtimeConfiguration.checkDisplayName {
                 Out-String |
                     ConvertFrom-Json -Depth 99
 
-            $response.organization_contact.name | Should -Be $checkConfiguration.organisationContact
-            $response.technical_contact.name | Should -Be $checkConfiguration.technicalContact
+            $response.organization_contact.name | Should -Be $internalConfiguration.organisationContact
+            $response.technical_contact.name | Should -Be $internalConfiguration.technicalContact
         }
 
         It "The organisation validation (OV) should be valid within the expirying orders renewal window" {
@@ -69,7 +69,7 @@ Describe $runtimeConfiguration.checkDisplayName {
                 Out-String |
                     ConvertFrom-Json -Depth 99
 
-            ($response.validations | Where-Object {$_.type -eq "ov"}).validated_until -gt $runtimeConfiguration.checkDateTime.AddDays($checkConfiguration.ordersExpiringRenewBeforeInDays) | Should -Be $true
+            ($response.validations | Where-Object {$_.type -eq "ov"}).validated_until -gt $externalConfiguration.checkDateTime.AddDays($internalConfiguration.ordersExpiringRenewBeforeInDays) | Should -Be $true
         }
 
         AfterEach {
@@ -88,7 +88,7 @@ Describe $runtimeConfiguration.checkDisplayName {
                 Out-String |
                     ConvertFrom-Json -Depth 99
 
-            ($response.expiring_orders | Where-Object {$_.days_expiring -eq $checkConfiguration.ordersExpiringRenewBeforeInDays}).order_count | Should -Be 0
+            ($response.expiring_orders | Where-Object {$_.days_expiring -eq $internalConfiguration.ordersExpiringRenewBeforeInDays}).order_count | Should -Be 0
         }
 
         AfterEach {
@@ -97,7 +97,7 @@ Describe $runtimeConfiguration.checkDisplayName {
         }
 
         AfterAll {
-            Write-Host ("`nDigicert orders expiring renewal window in days: {0}`n" -f $checkConfiguration.ordersExpiringRenewBeforeInDays)
+            Write-Host ("`nDigicert orders expiring renewal window in days: {0}`n" -f $internalConfiguration.ordersExpiringRenewBeforeInDays)
         }
     }
 
@@ -121,7 +121,7 @@ Describe $runtimeConfiguration.checkDisplayName {
                     Out-String |
                         ConvertFrom-Json -Depth 99
 
-                [decimal]$response.total_available_funds | Should -BeGreaterOrEqual $checkConfiguration.totalAvailableFundsMinInUSD
+                [decimal]$response.total_available_funds | Should -BeGreaterOrEqual $internalConfiguration.totalAvailableFundsMinInUSD
             }
         }
 
@@ -132,10 +132,10 @@ Describe $runtimeConfiguration.checkDisplayName {
     }
 
     AfterAll {
-        Clear-Variable -Name "checkConfigurationFilename"
+        Clear-Variable -Name "internalConfigurationFilename"
         Clear-Variable -Name "stageName"
         Clear-Variable -Name "checkName"
-        Clear-Variable -Name "checkConfiguration"
+        Clear-Variable -Name "internalConfiguration"
         Clear-Variable -Name "webRequestParameters"
         Clear-Variable -Name "baseURL"
         Clear-Variable -Name "organisationId"

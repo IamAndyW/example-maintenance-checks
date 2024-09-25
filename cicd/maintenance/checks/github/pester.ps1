@@ -1,65 +1,65 @@
 param (
     [Parameter(Mandatory = $true)]
-    [hashtable] $runtimeConfiguration
+    [hashtable] $externalConfiguration
 )
 
 BeforeDiscovery {
     Push-Location -Path $PSScriptRoot
     
-    $checkConfigurationFilename = $runtimeConfiguration.checkConfigurationFilename
-    $checkName = $runtimeConfiguration.checkName
+    $internalConfigurationFilename = $externalConfiguration.checkConfigurationFilename
+    $checkName = $externalConfiguration.checkName
 
     # loading check configuration
-    if (-not (Test-Path -Path $checkConfigurationFilename)) {
-        throw ("Missing configuration file: {0}" -f $checkConfigurationFilename)
+    if (-not (Test-Path -Path $internalConfigurationFilename)) {
+        throw ("Missing configuration file: {0}" -f $internalConfigurationFilename)
     }
 
-    $checkConfiguration = (Get-Content -Path $checkConfigurationFilename |
+    $internalConfiguration = (Get-Content -Path $internalConfigurationFilename |
         ConvertFrom-Json -Depth 99).$checkName
     
-    if ($null -eq $checkConfiguration) {
-        throw ("Cannot find configuration in file: '{0}'" -f $checkConfigurationFilename)
+    if ($null -eq $internalConfiguration) {
+        throw ("Cannot find configuration in file: '{0}'" -f $internalConfigurationFilename)
     }
 
     # installing dependencies
     . ../../powershell/Install-PowerShellModules.ps1 -modules ("PowerShellForGitHub")
     
     # GitHub authentication
-    $secureString = ($runtimeConfiguration.githubToken | ConvertTo-SecureString -AsPlainText -Force)
+    $secureString = ($externalConfiguration.githubToken | ConvertTo-SecureString -AsPlainText -Force)
     $credential = New-Object System.Management.Automation.PSCredential "username is ignored", $secureString
     Set-GitHubAuthentication -Credential $credential -SessionOnly
 
     # building the discovery object
     $discovery = [System.Collections.ArrayList]@()
 
-    foreach ($repository in $checkConfiguration.repositories) {
-        $pullRequests = Get-GitHubPullRequest -OwnerName $checkConfiguration.owner -RepositoryName $repository |
+    foreach ($repository in $internalConfiguration.repositories) {
+        $pullRequests = Get-GitHubPullRequest -OwnerName $internalConfiguration.owner -RepositoryName $repository |
             Where-Object {$_.state -eq 'open' -and $_.user.login -eq 'dependabot[bot]'} |
                 Select-Object -Property title, created_at
         
         $discoveryObject = [ordered] @{
-            owner = $checkConfiguration.owner
-            dependabotPRStaleInDays = $checkConfiguration.dependabotPRStaleInDays
-            dependabotPRMaxCount = $checkConfiguration.dependabotPRMaxCount
+            owner = $internalConfiguration.owner
+            dependabotPRStaleInDays = $internalConfiguration.dependabotPRStaleInDays
+            dependabotPRMaxCount = $internalConfiguration.dependabotPRMaxCount
             repositoryName = $repository           
             pullRequests = $pullRequests
         }
         $context = New-Object PSObject -property $discoveryObject
         $discovery.Add($context)
 
-        $dependabotPRStaleInDays = $checkConfiguration.dependabotPRStaleInDays
-        $dependabotPRMaxCount = $checkConfiguration.dependabotPRMaxCount
+        $dependabotPRStaleInDays = $internalConfiguration.dependabotPRStaleInDays
+        $dependabotPRMaxCount = $internalConfiguration.dependabotPRMaxCount
     }
 }
 
-Describe $runtimeConfiguration.checkDisplayName {
+Describe $externalConfiguration.checkDisplayName {
 
     Context "Repository: '<_.repositoryName>'" -ForEach $discovery {
 
         BeforeAll {
             Write-Host "`n"
 
-            $dateThreshold = $runtimeConfiguration.checkDateTime.AddDays(-$_.dependabotPRStaleInDays)
+            $dateThreshold = $externalConfiguration.checkDateTime.AddDays(-$_.dependabotPRStaleInDays)
             $dependabotPRMaxCount = $_.dependabotPRMaxCount
         }
 

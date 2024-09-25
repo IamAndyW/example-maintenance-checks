@@ -1,34 +1,34 @@
 param (
     [Parameter(Mandatory = $true)]
-    [hashtable] $runtimeConfiguration
+    [hashtable] $externalConfiguration
 )
 
 BeforeDiscovery {
     Push-Location -Path $PSScriptRoot
     
-    $checkConfigurationFilename = $runtimeConfiguration.checkConfigurationFilename
-    $stageName = $runtimeConfiguration.stageName
-    $checkName = $runtimeConfiguration.checkName
+    $internalConfigurationFilename = $externalConfiguration.checkConfigurationFilename
+    $stageName = $externalConfiguration.stageName
+    $checkName = $externalConfiguration.checkName
 
     # loading check configuration
-    if (-not (Test-Path -Path $checkConfigurationFilename)) {
-        throw ("Missing configuration file: {0}" -f $checkConfigurationFilename)
+    if (-not (Test-Path -Path $internalConfigurationFilename)) {
+        throw ("Missing configuration file: {0}" -f $internalConfigurationFilename)
     }
 
-    $checkConfiguration = ((Get-Content -Path $checkConfigurationFilename |
+    $internalConfiguration = ((Get-Content -Path $internalConfigurationFilename |
         ConvertFrom-Json -Depth 99).stages |
             Where-Object {$_.name-eq $stageName}).$checkName
     
-    if ($null -eq $checkConfiguration) {
-        throw ("Cannot find configuration: '{0}' in file: '{1}'" -f $stageName, $checkConfigurationFilename)
+    if ($null -eq $internalConfiguration) {
+        throw ("Cannot find configuration: '{0}' in file: '{1}'" -f $stageName, $internalConfigurationFilename)
     }
 
     # building the discovery object
     $discovery = [System.Collections.ArrayList]@()
 
-    foreach ($resource in $checkConfiguration.clusters) {
+    foreach ($resource in $internalConfiguration.clusters) {
         $discoveryObject = [ordered] @{
-            aksVersionThreshold = $checkConfiguration.aksVersionThreshold
+            aksVersionThreshold = $internalConfiguration.aksVersionThreshold
             resourceGroupName = $resource.resourceGroupName
             resourceName = $resource.resourceName
         }
@@ -45,7 +45,7 @@ BeforeAll {
     . ../../powershell/Install-PowerShellModules.ps1 -modules ("Az.Aks")
 }
 
-Describe $runtimeConfiguration.checkDisplayName -ForEach $discovery {
+Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
 
     BeforeAll {
         $resourceGroupName = $_.resourceGroupName

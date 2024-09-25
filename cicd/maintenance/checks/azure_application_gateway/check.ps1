@@ -13,9 +13,9 @@ Push-Location -Path $PSScriptRoot
 # setting variables
 $script:pesterFilename = 'pester.ps1'
 
-# runtime configuration available in the discovery and run phases of Peste
+# configuration available in the discovery and run phases of Pester
 $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
-    runtimeConfiguration = $runtimeConfiguration
+    externalConfiguration = $externalConfiguration
 }
 
 # Pester configuration - https://pester.dev/docs/usage/configuration
