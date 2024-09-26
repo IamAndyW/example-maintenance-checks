@@ -1,0 +1,30 @@
+{
+    "azure_devops": {
+        "organisation": "ensonodigitaluk",
+        "baseURL": "https://dev.azure.com",
+        "projects": [
+            {
+                "name": "Stacks",
+                "builds": [
+                    {
+                        "buildName": "stacks-cli",
+                        "buildBranch": "refs/heads/main"
+                    },
+                    {
+                        "buildName": "independent-runner",
+                        "buildBranch": "refs/heads/main"
+                    }
+                ]
+            },
+            {
+                "name": "SRE",
+                "builds": [
+                    {
+                        "buildName": "Ensono.EnsonoDigital.SRE.ADOBacklogGroomer",
+                        "buildBranch": "refs/heads/main"
+                    }
+                ]
+            }
+        ]
+    }
+}

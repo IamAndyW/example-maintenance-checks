@@ -1,5 +1,13 @@
 name: $(Date:yyyy.MM.dd)$(Rev:.r)
 
+schedules:
+  - cron: "0 6 * * *"
+    displayName: "Daily 06:00"
+    branches:
+      include:
+        - main
+    always: true
+
 trigger:
   branches:
     include:
@@ -36,6 +44,15 @@ parameters:
               installTaskctl: false
               powershellEnvVariables:
                 GITHUB_TOKEN: $(GITHUB_TOKEN)
+              uploadCheckResults: true
+          - name: azure_devops
+            displayName: 'Azure DevOps'
+            dependsOn: []
+            variableGroups:
+            tasks:
+              installTaskctl: false
+              powershellEnvVariables:
+                SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               uploadCheckResults: true
       - name: nonprod
         displayName: 'NONPROD'

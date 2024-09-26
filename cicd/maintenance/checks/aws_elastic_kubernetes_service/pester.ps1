@@ -60,7 +60,7 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
         }      
     }
 
-    Context "Status: '<_.resourceName>/<_.resourceRegion>'" {
+    Context "Provisioning: <_.resourceRegion>/<_.resourceName>" {
 
         It "Should have a Status of ACTIVE" {
             $resource.Status | Should -Be "ACTIVE"
@@ -68,7 +68,7 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
         
     }
 
-    Context "Version: '<_.resourceName>/<_.resourceRegion>'" {
+    Context "Cluster: <_.resourceRegion>/<_.resourceName>" {
 
         BeforeAll {
             $currentVersion = $resource.Version

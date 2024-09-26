@@ -63,15 +63,15 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
         }      
     }
 
-    Context "Provisioning: '<_.resourceGroupName>/<_.resourceName>'" {
+    Context "Provisioning: <_.resourceGroupName>/<_.resourceName>" {
 
-        It "Should have 'ProvisioningState' of 'Succeeded'" {
+        It "Should have Provisioning State of 'Succeeded'" {
             $resource.ProvisioningState | Should -Be "Succeeded"
         }
         
     }
 
-    Context "Version: '<_.resourceGroupName>/<_.resourceName>'" {
+    Context "Cluster: <_.resourceGroupName>/<_.resourceName>" {
 
         BeforeAll {
             $currentVersion = $resource.KubernetesVersion

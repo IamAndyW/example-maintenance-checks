@@ -79,15 +79,15 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
         }       
     }
 
-    Context "Provisioning: '<_.resourceGroupName>/<_.resourceName>'" {
+    Context "Provisioning: <_.resourceGroupName>/<_.resourceName>" {
 
-        It "Should have 'ProvisioningState' of 'Succeeded'" {
+        It "Should have Provisioning State of 'Succeeded'" {
             $resource.ProvisioningState | Should -Be "Succeeded"
         }
         
     }
 
-    Context "Certificate: '<_.resourceGroupName>/<_.resourceName>'" {
+    Context "Certificate: <_.resourceGroupName>/<_.resourceName>" {
 
         It "The Ssl certificate should not be in the renewal window (now + <_.certificateRenewalBeforeInDays> days)" {    
             $certificateExpiryDate -gt $externalConfiguration.checkDateTime.AddDays($_.certificateRenewalBeforeInDays) | Should -Be $true

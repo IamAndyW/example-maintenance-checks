@@ -24,7 +24,7 @@ if ($skipUntilDateTime -gt $checkDateTime) {
 
 } else {
 
-    # global runtime configuration
+    # common configuration
     $externalConfiguration = @{
         checkConfigurationFilename = "configuration.json"
         checkName = $env:SYSTEM_PHASENAME
