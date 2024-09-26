@@ -62,6 +62,17 @@ parameters:
               powershellEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               uploadCheckResults: true
+          - name: aws_elastic_kubernetes_service
+            displayName: 'AWS Elastic Kubernetes Service'
+            dependsOn: []
+            variableGroups:
+              - aws-creds
+            tasks:
+              installTaskctl: false
+              powershellEnvVariables:
+                AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+                AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              uploadCheckResults: true
       - name: prod
         displayName: 'PROD'
         dependsOn: ['build']
@@ -96,6 +107,17 @@ parameters:
               installTaskctl: false
               powershellEnvVariables:
                 DIGICERT_API_KEY: $(DIGICERT_API_KEY)
+              uploadCheckResults: true
+          - name: aws_elastic_kubernetes_service
+            displayName: 'AWS Elastic Kubernetes Service'
+            dependsOn: []
+            variableGroups:
+              - aws-creds
+            tasks:
+              installTaskctl: false
+              powershellEnvVariables:
+                AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+                AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               uploadCheckResults: true
 
 variables:
@@ -163,7 +185,7 @@ stages:
                     inputs:
                       targetType: 'filePath'
                       workingDirectory: $(working_directory)
-                      filePath: '$(working_directory)/$(maintenance_check_powershell_entry_filename)'
+                      filePath: '$(working_directory)/Invoke-Check.ps1'
                     env:
                       ${{ if job.tasks.powershellEnvVariables }}:
                         ${{ each variable in job.tasks.powershellEnvVariables }}:

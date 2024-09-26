@@ -2,24 +2,24 @@
     "stages": [
         {
             "name": "nonprod",
-            "azure_kubernetes_service": {
+            "aws_elastic_kubernetes_service": {
                 "versionThreshold": 2,
                 "clusters": [
                     {
-                        "resourceGroupName": "ed-stacks-nonprod-euw-core",
-                        "resourceName": "ed-stacks-nonprod-euw-core"
+                        "resourceName": "ensono-stacks-nonprod-ew2-eks",
+                        "resourceRegion": "eu-west-2"
                     }
                 ]
             }
         },
         {
             "name": "prod",
-            "azure_kubernetes_service": {
+            "aws_elastic_kubernetes_service": {
                 "versionThreshold": 2,
                 "clusters": [
                     {
-                        "resourceGroupName": "ed-stacks-prod-euw-core",
-                        "resourceName": "ed-stacks-prod-euw-core"
+                        "resourceName": "ensono-stacks-prod-ew2-eks",
+                        "resourceRegion": "eu-west-2"
                     }
                 ]
             }

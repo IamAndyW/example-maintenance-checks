@@ -42,3 +42,4 @@ check_results.xml
 
 # custom
 envVar.ps1
+envfile*

@@ -1,26 +1,25 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [string]
-    $tenantId = $env:ARM_TENANT_ID,
+    $tenantId,
     
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [string]
-    $subscriptionId = $env:ARM_SUBSCRIPTION_ID,
+    $subscriptionId,
 
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [string]
-    $clientId = $env:ARM_CLIENT_ID,
+    $clientId,
 
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $true)]
     [string]
-    $clientSecret = $env:ARM_CLIENT_SECRET
+    $clientSecret
 )
 
-. $PSScriptRoot/Install-PowerShellModules.ps1 -modules ("Az.Accounts")
+. $PSScriptRoot/Install-PowerShellModules.ps1 -moduleNames ("Az.Accounts")
 
 $secureClientSecret = ConvertTo-SecureString -String $clientSecret -AsPlainText -Force
-$clientId = $clientId
 $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $clientId, $secureClientSecret
 Connect-AzAccount -ServicePrincipal -TenantId $tenantId -Credential $credential -Subscription $subscriptionId
 

@@ -29,8 +29,8 @@ BeforeDiscovery {
     foreach ($resource in $internalConfiguration.clusters) {
         $discoveryObject = [ordered] @{
             versionThreshold = $internalConfiguration.versionThreshold
-            resourceGroupName = $resource.resourceGroupName
             resourceName = $resource.resourceName
+            resourceRegion = $resource.resourceRegion
         }
         $context = New-Object PSObject -property $discoveryObject
         $discovery.Add($context)
@@ -38,48 +38,45 @@ BeforeDiscovery {
 }
 
 BeforeAll {
-    # Azure authentication
-    . ../../powershell/Connect-Azure.ps1 `
-        -tenantId $externalConfiguration.armTenantId `
-        -subscriptionId $externalConfiguration.armSubscriptionId `
-        -clientId $externalConfiguration.armClientId `
-        -clientSecret $externalConfiguration.armClientSecret
-
     # installing dependencies
-    . ../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.Aks")
+    . ../../powershell/Install-PowerShellModules.ps1 -moduleNames ("AWS.Tools.Installer")
+    Install-AWSToolsModule AWS.Tools.Common, AWS.Tools.EKS -Force
+
+    # AWS authentication
+    Set-AWSCredential -AccessKey $externalConfiguration.awsAccessKeyId -SecretKey $externalConfiguration.awsSecretAccessKey 
 }
 
 Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
 
     BeforeAll {
-        $resourceGroupName = $_.resourceGroupName
         $resourceName = $_.resourceName
+        $resourceRegion = $_.resourceRegion
 
         try {
-            $resource = Get-AzAksCluster -ResourceGroupName $resourceGroupName -Name $resourceName
+            $resource = Get-EKSCluster -Name $resourceName -Region $resourceRegion
         }
         catch {
-            throw ("Cannot find resource: '{0}' in resource group: '{1}'" -f $resourceName, $resourceGroupName)
+            throw ("Cannot find resource: '{0}' in region: '{1}'" -f $resourceName, $resourceRegion)
         }      
     }
 
-    Context "Provisioning: '<_.resourceGroupName>/<_.resourceName>'" {
+    Context "Status: '<_.resourceName>/<_.resourceRegion>'" {
 
-        It "Should have 'ProvisioningState' of 'Succeeded'" {
-            $resource.ProvisioningState | Should -Be "Succeeded"
+        It "Should have a Status of ACTIVE" {
+            $resource.Status | Should -Be "ACTIVE"
         }
         
     }
 
-    Context "Version: '<_.resourceGroupName>/<_.resourceName>'" {
+    Context "Version: '<_.resourceName>/<_.resourceRegion>'" {
 
         BeforeAll {
-            $currentVersion = $resource.KubernetesVersion
+            $currentVersion = $resource.Version
             $versionThreshold = $_.versionThreshold
-            
-            $targetVersions = (Get-AzAksVersion -Location $resource.Location |
-            Where-Object {$_.IsPreview -ne $true} | Sort-Object { $_.OrchestratorVersion -as [version] } -Descending).OrchestratorVersion |
-                Select-Object -First $versionThreshold
+
+            $targetVersions = (Get-EKSAddonVersion -AddonName 'vpc-cni' -Region $resourceRegion).AddonVersions.Compatibilities.ClusterVersion |
+                Sort-Object {$_ -as [version]} -Unique -Descending |
+                    Select-Object -First $versionThreshold
         }
 
         It "The current version should be within target versions" {       
@@ -89,11 +86,11 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
         AfterAll {
             Write-Host ("`nCurrent version {0}" -f $currentVersion)
 
-            Write-Host("`nTarget versions (n-{0}) for {1}" -f $versionThreshold, $resource.Location)
+            Write-Host("`nTarget versions (n-{0}) for {1}" -f $versionThreshold, $resourceRegion)
             foreach ($version in $targetVersions) {
                 Write-Host $version
             }
-        
+            
             Write-Host ""
 
             Clear-Variable -Name "currentVersion"
@@ -103,12 +100,12 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
     }
 
     AfterAll {
-        Clear-Variable -Name "resourceGroupName"
         Clear-Variable -Name "resourceName"
+        Clear-Variable -Name "resourceRegion"
         Clear-Variable -Name "resource"
     }
 }
 
 AfterAll {
-    Clear-AzContext -Scope CurrentUser -Force
+    Clear-AWSCredential
 }

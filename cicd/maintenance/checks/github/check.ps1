@@ -8,7 +8,7 @@
 Push-Location -Path $PSScriptRoot
 
 # installing dependencies
-. ../../powershell/Install-PowerShellModules.ps1 -modules ("Pester")
+. ../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Pester")
 
 # setting variables
 $script:pesterFilename = 'pester.ps1'

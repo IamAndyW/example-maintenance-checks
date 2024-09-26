@@ -39,10 +39,14 @@ BeforeDiscovery {
 
 BeforeAll {
     # Azure authentication
-    . ../../powershell/Connect-Azure.ps1
+    . ../../powershell/Connect-Azure.ps1 `
+        -tenantId $externalConfiguration.armTenantId `
+        -subscriptionId $externalConfiguration.armSubscriptionId `
+        -clientId $externalConfiguration.armClientId `
+        -clientSecret $externalConfiguration.armClientSecret
 
     # installing dependencies
-    . ../../powershell/Install-PowerShellModules.ps1 -modules ("Az.Network")
+    . ../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.Network")
 }
 
 Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
@@ -52,23 +56,23 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
         $resourceName = $_.resourceName
 
         try {
-            $azureResource = Get-AzApplicationGateway -ResourceGroupName $resourceGroupName -Name $resourceName
+            $resource = Get-AzApplicationGateway -ResourceGroupName $resourceGroupName -Name $resourceName
         }
         catch {
-            throw ("Cannot find resource: '{0}' in resource group" -f $resourceName, $resourceGroupName)
+            throw ("Cannot find resource: '{0}' in resource group: '{1}'" -f $resourceName, $resourceGroupName)
         }
 
-        $keyVaultSecretId = $azureResource.SslCertificates.KeyVaultSecretId
+        $keyVaultSecretId = $resource.SslCertificates.KeyVaultSecretId
         
         if ([string]::IsNullOrEmpty($keyVaultSecretId)) {
-            $certificateBytes = [Convert]::FromBase64String($azureResource.SslCertificates.PublicCertData)
+            $certificateBytes = [Convert]::FromBase64String($resource.SslCertificates.PublicCertData)
             $p7b = New-Object System.Security.Cryptography.Pkcs.SignedCms
             $p7b.Decode($certificateBytes)
             $certificateExpiryDate = $p7b.Certificates[0].NotAfter
 
         } else {
             # installing dependencies
-            . ../../powershell/Install-PowerShellModules.ps1 -modules ("Az.KeyVault")
+            . ../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.KeyVault")
             
             $elements = $keyVaultSecretId.Split('/')
             $certificateExpiryDate = (Get-AzKeyVaultCertificate -VaultName $elements[2].Split('.')[0] -Name $elements[4]).Expires
@@ -78,7 +82,7 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
     Context "Provisioning: '<_.resourceGroupName>/<_.resourceName>'" {
 
         It "Should have 'ProvisioningState' of 'Succeeded'" {
-            $azureResource.ProvisioningState | Should -Be "Succeeded"
+            $resource.ProvisioningState | Should -Be "Succeeded"
         }
         
     }
@@ -97,10 +101,14 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
     AfterAll {
         Clear-Variable -Name "resourceGroupName"
         Clear-Variable -Name "resourceName"
-        Clear-Variable -Name "azureResource"
+        Clear-Variable -Name "resource"
         Clear-Variable -Name "keyVaultSecretId"
         Clear-Variable -Name "certificateBytes" -ErrorAction Continue
         Clear-Variable -Name "p7b" -ErrorAction Continue
         Clear-Variable -Name "certificateExpiryDate"
     }
+}
+
+AfterAll {
+    Clear-AzContext -Scope CurrentUser -Force
 }

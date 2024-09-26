@@ -2,15 +2,18 @@
 param(
     [Parameter(Mandatory = $true)]
     [array]
-    $modules
+    $moduleNames
 )
 
-foreach ($module in $modules) {
-    Write-Host ("`nModule: {0}" -f $module)
-    if ($null -eq (Get-Module -Name $module -ListAvailable)) {
+foreach ($moduleName in $moduleNames) {
+    Write-Host ("`nModule name: {0}" -f $moduleName)
+    
+    $module = Get-Module -Name $moduleName -ListAvailable
+
+    if ($null -eq $module) {
         Write-Host ("Installing module`n") -ForegroundColor Yellow
-        Install-Module -Name $module -Scope CurrentUser -Repository PSGallery -Force
+        Install-Module -Name $moduleName -Scope CurrentUser -PassThru -Repository PSGallery -Force
     } else {
-        Write-Host ("Module already installed`n") -ForegroundColor Yellow
+        Write-Host ("Module already installed with version: {0}`n" -f $module.Version) -ForegroundColor Yellow
     }
 }

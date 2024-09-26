@@ -8,7 +8,7 @@
 Push-Location -Path $PSScriptRoot
 
 # installing dependencies
-. ../../powershell/Install-PowerShellModules.ps1 -modules ("Pester")
+. ../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Pester")
 
 # setting variables
 $script:pesterFilename = 'pester.ps1'
@@ -25,7 +25,7 @@ $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
 $script:pesterConfiguration = [PesterConfiguration] @{
     Run = @{
         Container = $pesterContainer
-    }    
+    }
     Output = @{
         Verbosity = 'Detailed'
     }

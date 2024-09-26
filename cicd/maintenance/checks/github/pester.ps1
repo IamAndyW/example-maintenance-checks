@@ -22,7 +22,7 @@ BeforeDiscovery {
     }
 
     # installing dependencies
-    . ../../powershell/Install-PowerShellModules.ps1 -modules ("PowerShellForGitHub")
+    . ../../powershell/Install-PowerShellModules.ps1 -moduleNames ("PowerShellForGitHub")
     
     # GitHub authentication
     $secureString = ($externalConfiguration.githubToken | ConvertTo-SecureString -AsPlainText -Force)

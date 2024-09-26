@@ -4,8 +4,8 @@
     Check filename: '[check name]/[check basename].ps1'
     example: 'terraform/check.ps1'
 
-    Check configuration filename: '[check name]/[check basename]_configuration.json
-    example: 'terraform/check_configuration.json'
+    Check configuration filename: '[check name]/configuration.json
+    example: 'terraform/configuration.json'
 #>
 
 $ErrorActionPreference = "Stop"

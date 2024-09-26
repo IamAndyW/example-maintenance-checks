@@ -14,10 +14,8 @@ Push-Location -Path $PSScriptRoot
 $script:pesterFilename = 'pester.ps1'
 
 # configuration available in the discovery and run phases of Pester
-$externalConfiguration.Add('armTenantId', $env:ARM_TENANT_ID)
-$externalConfiguration.Add('armSubscriptionId', $env:ARM_SUBSCRIPTION_ID)
-$externalConfiguration.Add('armClientId', $env:ARM_CLIENT_ID)
-$externalConfiguration.Add('armClientSecret', $env:ARM_CLIENT_SECRET)
+$externalConfiguration.Add('awsAccessKeyId', $env:AWS_ACCESS_KEY_ID)
+$externalConfiguration.Add('awsSecretAccessKey', $env:AWS_SECRET_ACCESS_KEY)
 
 $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
     externalConfiguration = $externalConfiguration
