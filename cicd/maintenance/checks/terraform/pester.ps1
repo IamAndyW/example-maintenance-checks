@@ -4,8 +4,6 @@ param (
 )
 
 BeforeDiscovery {
-    Push-Location -Path $PSScriptRoot
-    
     $internalConfigurationFilename = $externalConfiguration.checkConfigurationFilename
     $checkName = $externalConfiguration.checkName
 
@@ -14,32 +12,22 @@ BeforeDiscovery {
         throw ("Missing configuration file: {0}" -f $internalConfigurationFilename)
     }
 
-    $internalConfiguration = (Get-Content -Path $internalConfigurationFilename |
-        ConvertFrom-Json -Depth 99).$checkName
+    $internalConfiguration = Get-Content -Path $internalConfigurationFilename |
+        ConvertFrom-Json -Depth 99
     
     if ($null -eq $internalConfiguration) {
-        throw ("Cannot find configuration in file: '{0}'" -f $internalConfigurationFilename)
+        throw ("Cannot find configuration: {0} in file: {1}" -f $checkName, $internalConfigurationFilename)
     }
 
-    $discovery = [System.Collections.ArrayList]@()
-
-    foreach ($requiredVersionConstraint in $internalConfiguration.requiredVersionConstraints) {
-    
-        $discoveryObject = [ordered] @{
-            requiredVersionConstraint  = $requiredVersionConstraint
-        }
-        $context = New-Object PSObject -property $discoveryObject
-        $discovery.Add($context)
-    }
+    $discovery = $internalConfiguration
 } 
 
-Describe $externalConfiguration.checkDisplayName {
+Describe $externalConfiguration.checkDisplayName -ForEach $discovery.$($externalConfiguration.checkName) {
 
-    BeforeAll {
-        $testFilePath = "./version.tf"
-    }
-
-    Context "Required Version: <_>" -ForEach $discovery.requiredVersionConstraint {
+    Context "Required Version: <_>" -ForEach $_.requiredVersionConstraints {
+        BeforeAll {
+            $testFilePath = "./version.tf"
+        }
 
         BeforeEach {
             @"

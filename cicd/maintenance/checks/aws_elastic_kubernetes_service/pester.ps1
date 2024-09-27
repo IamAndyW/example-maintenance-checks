@@ -4,37 +4,24 @@ param (
 )
 
 BeforeDiscovery {
-    Push-Location -Path $PSScriptRoot
-    
     $internalConfigurationFilename = $externalConfiguration.checkConfigurationFilename
     $stageName = $externalConfiguration.stageName
-    $checkName = $externalConfiguration.checkName
 
     # loading check configuration
     if (-not (Test-Path -Path $internalConfigurationFilename)) {
         throw ("Missing configuration file: {0}" -f $internalConfigurationFilename)
     }
 
-    $internalConfiguration = ((Get-Content -Path $internalConfigurationFilename |
+    $internalConfiguration = (Get-Content -Path $internalConfigurationFilename |
         ConvertFrom-Json -Depth 99).stages |
-            Where-Object {$_.name-eq $stageName}).$checkName
+            Where-Object {$_.name-eq $stageName}
     
     if ($null -eq $internalConfiguration) {
         throw ("Cannot find configuration: '{0}' in file: '{1}'" -f $stageName, $internalConfigurationFilename)
     }
 
     # building the discovery object
-    $discovery = [System.Collections.ArrayList]@()
-
-    foreach ($resource in $internalConfiguration.clusters) {
-        $discoveryObject = [ordered] @{
-            versionThreshold = $internalConfiguration.versionThreshold
-            resourceName = $resource.resourceName
-            resourceRegion = $resource.resourceRegion
-        }
-        $context = New-Object PSObject -property $discoveryObject
-        $discovery.Add($context)
-    }
+    $discovery = $internalConfiguration
 }
 
 BeforeAll {
@@ -46,40 +33,35 @@ BeforeAll {
     Set-AWSCredential -AccessKey $externalConfiguration.awsAccessKeyId -SecretKey $externalConfiguration.awsSecretAccessKey 
 }
 
-Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
+Describe $externalConfiguration.checkDisplayName -ForEach $discovery.$($externalConfiguration.checkName) {
 
     BeforeAll {
-        $resourceName = $_.resourceName
-        $resourceRegion = $_.resourceRegion
-
-        try {
-            $resource = Get-EKSCluster -Name $resourceName -Region $resourceRegion
-        }
-        catch {
-            throw ("Cannot find resource: '{0}' in region: '{1}'" -f $resourceName, $resourceRegion)
-        }      
+        $versionThreshold = $_.versionThreshold
     }
 
-    Context "Provisioning: <_.resourceRegion>/<_.resourceName>" {
+    Context "Cluster: <_.resourceRegion>/<_.resourceName>" -ForEach $_.clusters {
+        BeforeAll {
+            $resourceName = $_.resourceName
+            $resourceRegion = $_.resourceRegion
+    
+            try {
+                $resource = Get-EKSCluster -Name $resourceName -Region $resourceRegion
+            }
+            catch {
+                throw ("Cannot find resource: '{0}' in region: '{1}'" -f $resourceName, $resourceRegion)
+            }
+
+            $currentVersion = $resource.Version
+            $targetVersions = (Get-EKSAddonVersion -AddonName 'vpc-cni' -Region $resourceRegion).AddonVersions.Compatibilities.ClusterVersion |
+                Sort-Object {$_ -as [version]} -Unique -Descending |
+                    Select-Object -First $versionThreshold 
+        }
 
         It "Should have a Status of ACTIVE" {
             $resource.Status | Should -Be "ACTIVE"
         }
-        
-    }
 
-    Context "Cluster: <_.resourceRegion>/<_.resourceName>" {
-
-        BeforeAll {
-            $currentVersion = $resource.Version
-            $versionThreshold = $_.versionThreshold
-
-            $targetVersions = (Get-EKSAddonVersion -AddonName 'vpc-cni' -Region $resourceRegion).AddonVersions.Compatibilities.ClusterVersion |
-                Sort-Object {$_ -as [version]} -Unique -Descending |
-                    Select-Object -First $versionThreshold
-        }
-
-        It "The current version should be within target versions" {       
+        It "The current version should be within target versions" {   
             $targetVersions -contains $currentVersion | Should -Be $true
         }
 
@@ -93,16 +75,16 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
             
             Write-Host ""
 
+            Clear-Variable -Name "resourceName"
+            Clear-Variable -Name "resourceRegion"
+            Clear-Variable -Name "resource"
             Clear-Variable -Name "currentVersion"
-            Clear-Variable -Name "versionThreshold"
             Clear-Variable -Name "targetVersions"
         }
     }
 
     AfterAll {
-        Clear-Variable -Name "resourceName"
-        Clear-Variable -Name "resourceRegion"
-        Clear-Variable -Name "resource"
+        Clear-Variable -Name "versionThreshold"
     }
 }
 

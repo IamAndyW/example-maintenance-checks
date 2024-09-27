@@ -4,8 +4,6 @@ param (
 )
 
 BeforeDiscovery {
-    Push-Location -Path $PSScriptRoot
-    
     $internalConfigurationFilename = $externalConfiguration.checkConfigurationFilename
     $checkName = $externalConfiguration.checkName
 
@@ -15,60 +13,37 @@ BeforeDiscovery {
     }
 
     $internalConfiguration = (Get-Content -Path $internalConfigurationFilename |
-        ConvertFrom-Json -Depth 99).$checkName
+        ConvertFrom-Json -Depth 99)
     
     if ($null -eq $internalConfiguration) {
-        throw ("Cannot find configuration in file: '{0}'" -f $internalConfigurationFilename)
+        throw ("Cannot find configuration: {0} in file: {1}" -f $checkName, $internalConfigurationFilename)
     }
 
-    $discovery = [System.Collections.ArrayList]@()
-
-    foreach ($project in $internalConfiguration.projects) {
-            $discoveryObject = [ordered] @{
-                projectName = $project.name
-                builds = $project.builds
-            }
-            $context = New-Object PSObject -property $discoveryObject
-            $discovery.Add($context)
-    }
+    # building the discovery object
+    $discovery = $internalConfiguration
 } 
 
-Describe $externalConfiguration.checkDisplayName {
+Describe "$($externalConfiguration.checkDisplayName) / <_.organisation>" -ForEach $discovery.$($externalConfiguration.checkName) {
 
     BeforeAll {
-        $internalConfigurationFilename = $externalConfiguration.checkConfigurationFilename
-        $checkName = $externalConfiguration.checkName
-    
-        # loading check configuration
-        if (-not (Test-Path -Path $internalConfigurationFilename)) {
-            throw ("Missing configuration file: {0}" -f $internalConfigurationFilename)
-        }
-    
-        $internalConfiguration = (Get-Content -Path $internalConfigurationFilename |
-            ConvertFrom-Json -Depth 99).$checkName
-        
-        if ($null -eq $internalConfiguration) {
-            throw ("Cannot find configuration in file: '{0}'" -f $internalConfigurationFilename)
-        }
-
-        $personalAccessToken = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$($externalConfiguration.adoAccessToken)"))
+        $accessToken = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$($externalConfiguration.adoAccessToken)"))
 
         $parameters = @{
             "method" = "GET"
             "headers" = @{
-                "Authorization" = ("Basic {0}" -f $personalAccessToken)
+                "Authorization" = ("Basic {0}" -f $accessToken)
                 "Accept" = "application/json"
             }
         }
 
-        $baseURL = $internalConfiguration.baseURL
-        $organisation = $internalConfiguration.organisation
+        $baseURL = $_.baseURL
+        $organisation = $_.organisation
     }
 
-    Context "Project: <_.projectName>" -ForEach $discovery {
+    Context "Project: <_.name>" -ForEach $_.projects {
 
         BeforeAll {
-            $projectName = $_.projectName
+            $projectName = $_.name
         }
         
         It "Build result for <_.buildName> with branch: <_.buildBranch> should be 'succeeded'" -ForEach $_.builds {
@@ -99,7 +74,7 @@ Describe $externalConfiguration.checkDisplayName {
     }
 
     AfterAll {
-        Clear-Variable -Name "personalAccessToken"
+        Clear-Variable -Name "accessToken"
         Clear-Variable -Name "parameters"
         Clear-Variable -Name "organisation"
         Clear-Variable -Name "baseURL"

@@ -4,8 +4,6 @@ param (
 )
 
 BeforeDiscovery {
-    Push-Location -Path $PSScriptRoot
-    
     $internalConfigurationFilename = $externalConfiguration.checkConfigurationFilename
     $checkName = $externalConfiguration.checkName
 
@@ -18,7 +16,7 @@ BeforeDiscovery {
         ConvertFrom-Json -Depth 99).$checkName
     
     if ($null -eq $internalConfiguration) {
-        throw ("Cannot find configuration in file: '{0}'" -f $internalConfigurationFilename)
+        throw ("Cannot find configuration: {0} in file: {1}" -f $checkName, $internalConfigurationFilename)
     }
 
     # installing dependencies
@@ -32,29 +30,32 @@ BeforeDiscovery {
     # building the discovery object
     $discovery = [System.Collections.ArrayList]@()
 
-    foreach ($repository in $internalConfiguration.repositories) {
-        $pullRequests = Get-GitHubPullRequest -OwnerName $internalConfiguration.owner -RepositoryName $repository |
+    foreach ($repositoryName in $internalConfiguration.repositories) {
+        $pullRequests = Get-GitHubPullRequest -OwnerName $internalConfiguration.owner -RepositoryName $repositoryName |
             Where-Object {$_.state -eq 'open' -and $_.user.login -eq 'dependabot[bot]'} |
                 Select-Object -Property title, created_at
         
         $discoveryObject = [ordered] @{
-            owner = $internalConfiguration.owner
-            dependabotPRStaleInDays = $internalConfiguration.dependabotPRStaleInDays
-            dependabotPRMaxCount = $internalConfiguration.dependabotPRMaxCount
-            repositoryName = $repository           
-            pullRequests = $pullRequests
+            $externalConfiguration.checkName = @{
+                owner = $internalConfiguration.owner
+                dependabotPRStaleInDays = $internalConfiguration.dependabotPRStaleInDays
+                dependabotPRMaxCount = $internalConfiguration.dependabotPRMaxCount
+                repositoryName = $repositoryName           
+                pullRequests = $pullRequests
+            }
         }
         $context = New-Object PSObject -property $discoveryObject
         $discovery.Add($context)
 
-        $dependabotPRStaleInDays = $internalConfiguration.dependabotPRStaleInDays
+        #$dependabotPRStaleInDays = $internalConfiguration.dependabotPRStaleInDays
         $dependabotPRMaxCount = $internalConfiguration.dependabotPRMaxCount
+        $dateThreshold = $externalConfiguration.checkDateTime.AddDays(-$internalConfiguration.dependabotPRStaleInDays)
     }
 }
 
-Describe $externalConfiguration.checkDisplayName {
+Describe "$($externalConfiguration.checkDisplayName) / <_.owner>" -ForEach $discovery.$($externalConfiguration.checkName) {
 
-    Context "Repository: '<_.repositoryName>'" -ForEach $discovery {
+    Context "Repository: '<_.repositoryName>'" {
 
         BeforeAll {
             Write-Host "`n"
@@ -63,8 +64,8 @@ Describe $externalConfiguration.checkDisplayName {
             $dependabotPRMaxCount = $_.dependabotPRMaxCount
         }
 
-        It "Dependabot PR '<_.title>' creation date should not be older than $dependabotPRStaleInDays days" -ForEach $_.pullRequests {
-            $_.created_at -lt $dateThreshold | Should -Be $false
+        It "Dependabot PR '<_.title>' creation date should not be older than $($dateThreshold.ToString($externalConfiguration.checkDateFormat))" -ForEach $_.pullRequests {
+            $_.created_at | Should -BeGreaterThan $dateThreshold
         }
 
         It "The number of Dependabot PRs should be less than or equal to $dependabotPRMaxCount" {
