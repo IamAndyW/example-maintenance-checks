@@ -5,6 +5,7 @@ param (
 
 BeforeDiscovery {
     $internalConfigurationFilename = $externalConfiguration.checkConfigurationFilename
+    $checkName = $externalConfiguration.checkName
     $stageName = $externalConfiguration.stageName
 
     # loading check configuration
@@ -13,15 +14,15 @@ BeforeDiscovery {
     }
 
     $internalConfiguration = (Get-Content -Path $internalConfigurationFilename |
-        ConvertFrom-Json -Depth 99).stages |
-            Where-Object {$_.name-eq $stageName}
+        ConvertFrom-Json -Depth 99).$checkName
     
     if ($null -eq $internalConfiguration) {
-        throw ("Cannot find configuration: '{0}' in file: '{1}'" -f $stageName, $internalConfigurationFilename)
+        throw ("Cannot find configuration: '{0}' in file: '{1}'" -f $checkName, $internalConfigurationFilename)
     }
 
-    # building the discovery object
+    # building the discovery objects
     $discovery = $internalConfiguration
+    $clusters = ($discovery.stages | Where-Object {$_.name -eq $stageName}).clusters
 }
 
 BeforeAll {
@@ -36,13 +37,13 @@ BeforeAll {
     . ../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.Aks")
 }
 
-Describe $externalConfiguration.checkDisplayName -ForEach $discovery.$($externalConfiguration.checkName) {
+Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
 
     BeforeAll {
         $versionThreshold = $_.versionThreshold    
     }
 
-    Context "Gateway: <_.resourceGroupName>/<_.resourceName>" -ForEach $_.clusters {
+    Context "Gateway: <_.resourceGroupName>/<_.resourceName>" -ForEach $clusters {
         BeforeAll {
             $resourceGroupName = $_.resourceGroupName
             $resourceName = $_.resourceName
@@ -77,9 +78,9 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery.$($external
             foreach ($version in $targetVersions) {
                 Write-Host $version
             }
-            
-            Write-Host ""
 
+            Write-Host ""
+            
             Clear-Variable -Name "resourceGroupName"
             Clear-Variable -Name "resourceName"
             Clear-Variable -Name "resource"
@@ -89,6 +90,8 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery.$($external
     }
 
     AfterAll {
+        Write-Host ("`nRunbook: {0}`n" -f $_.runbook)
+        
         Clear-Variable -Name "versionThreshold"
     }
 }

@@ -1,12 +1,21 @@
 variables:
+  # ADO
   - name: ado_vm_image
     value: 'ubuntu-22.04'
 
+  # taskctl
   - name: taskctl_version
     value: '1.5.4'
 
+  # maintenance
   - name: maintenance_directory
     value: '$(Build.SourcesDirectory)/cicd/maintenance'
+  - name: maintenance_date_format
+    value: 'dd/MM/yyyy HH:mm:ss'
+  - name: maintenance_date_timezone
+    value: 'Europe/London'
+
+  # checks  
   - name: maintenance_checks_directory
     value: '$(maintenance_directory)/checks'
   - name: maintenance_check_script_basename
@@ -15,5 +24,3 @@ variables:
     value: '$(maintenance_check_script_basename).ps1'
   - name: maintenance_check_result_filename
     value: '$(maintenance_check_script_basename)_results.xml'
-  - name: maintenance_check_date_format
-    value: 'dd/MM/yyyy HH:mm:ss'

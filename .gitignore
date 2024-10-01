@@ -41,5 +41,5 @@ terraform.rc
 check_results.xml
 
 # custom
-envVar.ps1
+envvars_sensative.ps1
 envfile*

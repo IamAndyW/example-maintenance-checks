@@ -1,8 +1,8 @@
 name: $(Date:yyyy.MM.dd)$(Rev:.r)
 
 schedules:
-  - cron: "0 6 * * *"
-    displayName: "Daily 06:00"
+  - cron: "0 7 * * 1-5"
+    displayName: "Weekdays 07:00 (UTC)"
     branches:
       include:
         - main

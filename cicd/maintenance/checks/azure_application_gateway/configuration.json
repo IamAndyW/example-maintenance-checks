@@ -1,21 +1,19 @@
 {
-    "stages": [
-        {
-            "name": "nonprod",
-            "azure_application_gateway": {
-                "certificateRenewalBeforeInDays": 10,
+    "azure_application_gateway": {
+        "runbook": "https://google.com",
+        "certificateRenewalBeforeInDays": 10,
+        "stages": [
+            {
+                "name": "nonprod",
                 "gateways": [
                     {
                         "resourceGroupName": "ed-stacks-nonprod-euw-core",
                         "resourceName": "ed-stacks-nonprod-euw-core"
                     }
                 ]
-            }
-        },
-        {
-            "name": "prod",
-            "azure_application_gateway": {
-                "certificateRenewalBeforeInDays": 10,
+            },
+            {
+                "name": "prod",
                 "gateways": [
                     {
                         "resourceGroupName": "ed-stacks-prod-euw-core",
@@ -23,6 +21,6 @@
                     }
                 ]
             }
-        }
-    ]
+        ]
+    }
 }

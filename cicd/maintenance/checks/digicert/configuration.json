@@ -1,5 +1,6 @@
 {
     "digicert": {
+        "runbook": "https://google.com",
         "organisationContact": "Milan Juza",
         "technicalContact": "Colm Campbell",
         "ordersExpiringRenewBeforeInDays": 30,

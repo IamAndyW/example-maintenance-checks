@@ -12,8 +12,8 @@ BeforeDiscovery {
         throw ("Missing configuration file: {0}" -f $internalConfigurationFilename)
     }
 
-    $internalConfiguration = Get-Content -Path $internalConfigurationFilename |
-        ConvertFrom-Json -Depth 99
+    $internalConfiguration = (Get-Content -Path $internalConfigurationFilename |
+        ConvertFrom-Json -Depth 99).$checkName
     
     if ($null -eq $internalConfiguration) {
         throw ("Cannot find configuration: {0} in file: {1}" -f $checkName, $internalConfigurationFilename)
@@ -23,7 +23,7 @@ BeforeDiscovery {
     $discovery = $internalConfiguration
 }
 
-Describe $externalConfiguration.checkDisplayName -ForEach $discovery.$($externalConfiguration.checkName) {
+Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
 
     BeforeAll {
         $parameters = @{
@@ -115,6 +115,8 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery.$($external
     }
 
     AfterAll {
+        Write-Host ("`nRunbook: {0}`n" -f $_.runbook)
+        
         Clear-Variable -Name "parameters"
         Clear-Variable -Name "baseURL"
         Clear-Variable -Name "organisationId"

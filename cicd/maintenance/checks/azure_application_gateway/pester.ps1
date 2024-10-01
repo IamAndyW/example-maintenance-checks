@@ -5,6 +5,7 @@ param (
 
 BeforeDiscovery {
     $internalConfigurationFilename = $externalConfiguration.checkConfigurationFilename
+    $checkName = $externalConfiguration.checkName
     $stageName = $externalConfiguration.stageName
 
     # loading check configuration
@@ -13,16 +14,17 @@ BeforeDiscovery {
     }
 
     $internalConfiguration = (Get-Content -Path $internalConfigurationFilename |
-        ConvertFrom-Json -Depth 99).stages |
-            Where-Object {$_.name-eq $stageName}
+        ConvertFrom-Json -Depth 99).$checkName
     
     if ($null -eq $internalConfiguration) {
-        throw ("Cannot find configuration: '{0}' in file: '{1}'" -f $stageName, $internalConfigurationFilename)
+        throw ("Cannot find configuration: '{0}' in file: '{1}'" -f $checkName, $internalConfigurationFilename)
     }
 
-    # building the discovery object
+    # building the discovery objects
     $discovery = $internalConfiguration
-    $renewalStartDate = ($externalConfiguration.checkDateTime.AddDays(($internalConfiguration.$($externalConfiguration.checkName)).certificateRenewalBeforeInDays))
+    $gateways = ($discovery.stages | Where-Object {$_.name -eq $stageName}).gateways
+    
+    $renewalStartDate = $externalConfiguration.checkDateTime.AddDays($internalConfiguration.certificateRenewalBeforeInDays)
 }
 
 BeforeAll {
@@ -37,13 +39,13 @@ BeforeAll {
     . ../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.Network")
 }
 
-Describe $externalConfiguration.checkDisplayName -ForEach $discovery.$($externalConfiguration.checkName) {
+Describe $externalConfiguration.checkDisplayName -ForEach $discovery {
 
     BeforeAll {
         $renewalStartDate = $externalConfiguration.checkDateTime.AddDays($_.certificateRenewalBeforeInDays)    
     }
 
-    Context "Gateway: <_.resourceGroupName>/<_.resourceName>" -ForEach $_.gateways {
+    Context "Gateway: <_.resourceGroupName>/<_.resourceName>" -ForEach $gateways {
         BeforeAll {
             $resourceGroupName = $_.resourceGroupName
             $resourceName = $_.resourceName
@@ -77,7 +79,7 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery.$($external
             $resource.ProvisioningState | Should -Be "Succeeded"
         }
 
-        It "The certificate expiry date should not be after $($renewalStartDate.ToString($externalConfiguration.checkDateFormat))" {    
+        It "The certificate expiry date should be later than $($renewalStartDate.ToString($externalConfiguration.checkDateFormat))" {    
             $certificateExpiryDate | Should -BeGreaterThan $renewalStartDate
         }
 
@@ -95,6 +97,8 @@ Describe $externalConfiguration.checkDisplayName -ForEach $discovery.$($external
     }
 
     AfterAll {
+        Write-Host ("`nRunbook: {0}`n" -f $_.runbook)
+
         Clear-Variable -Name "renewalStartDate"
     }
 }

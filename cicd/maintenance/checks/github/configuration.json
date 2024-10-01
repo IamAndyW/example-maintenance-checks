@@ -1,5 +1,6 @@
 {
     "github": {
+        "runbook": "https://google.com",
         "owner": "ensono",
         "dependabotPRStaleInDays": 10,
         "dependabotPRMaxCount": 3,

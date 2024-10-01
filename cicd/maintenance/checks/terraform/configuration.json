@@ -1,5 +1,6 @@
 {
     "terraform": {
+        "runbook": "https://google.com",
         "requiredVersionConstraints": [
             "~> 1.0",
             "~> 1.9"
