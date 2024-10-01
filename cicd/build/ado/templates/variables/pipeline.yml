@@ -15,7 +15,7 @@ variables:
   - name: maintenance_date_timezone
     value: 'Europe/London'
 
-  # checks  
+  # checks
   - name: maintenance_checks_directory
     value: '$(maintenance_directory)/checks'
   - name: maintenance_check_script_basename
