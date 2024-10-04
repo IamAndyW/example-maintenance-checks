@@ -1,0 +1,11 @@
+runbook: https://google.com
+certificateRenewalBeforeInDays: 10
+stages:
+  - name: nonprod
+    gateways:
+      - resourceGroupName: ed-stacks-nonprod-euw-core
+        resourceName: ed-stacks-nonprod-euw-core
+  - name: prod
+    gateways:
+      - resourceGroupName: ed-stacks-prod-euw-core
+        resourceName: ed-stacks-prod-euw-core

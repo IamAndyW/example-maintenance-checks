@@ -1,0 +1,11 @@
+runbook: https://google.com
+versionThreshold: 2
+stages:
+  - name: nonprod
+    clusters:
+      - resourceName: ensono-stacks-nonprod-ew2-eks
+        resourceRegion: eu-west-2
+  - name: prod
+    clusters:
+      - resourceName: ensono-stacks-prod-ew2-eks
+        resourceRegion: eu-west-2

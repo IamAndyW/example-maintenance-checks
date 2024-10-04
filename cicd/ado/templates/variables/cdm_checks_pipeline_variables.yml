@@ -1,0 +1,28 @@
+variables:
+  # ADO
+  - name: ado_vm_image
+    value: 'ubuntu-22.04'
+
+  # taskctl
+  - name: taskctl_version
+    value: '1.5.4'
+
+  # CDM
+  - name: cdm_directory
+    value: 'cdm'
+  - name: cdm_date_format
+    value: 'dd/MM/yyyy HH:mm:ss'
+  - name: cdm_date_timezone  # https://www.unicode.org/cldr/charts/45/supplemental/zone_tzid.html
+    value: 'Europe/London'
+
+  # checks
+  - name: cdm_checks_directory
+    value: '${{ variables.cdm_directory }}/checks'
+  - name: cdm_check_script_basename
+    value: 'check'
+  - name: cdm_check_powershell_filename
+    value: '$(cdm_check_script_basename).ps1'
+  - name: cdm_check_configuration_filename
+    value: 'configuration.yml'
+  - name: cdm_check_result_filename
+    value: '$(cdm_check_script_basename)_results.xml'
