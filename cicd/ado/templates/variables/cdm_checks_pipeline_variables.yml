@@ -7,7 +7,15 @@ variables:
   - name: taskctl_version
     value: '1.5.4'
 
-  # CDM
+  # ado
+  - name: ado_client_name
+    value: 'The Gym Group'
+  - name: ado_collection_uri
+    value: 'https://dev.azure.com/ensonodigitaluk/'
+  - name: ado_project_name
+    value: 'sre'
+
+  # cdm
   - name: cdm_directory
     value: 'cdm'
   - name: cdm_date_format

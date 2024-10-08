@@ -21,14 +21,13 @@ if ($skipUntilDateTime -gt $checkDateTime) {
     # common configuration
     $pipelineConfiguration = @{
         checkConfigurationFilename = $env:CDM_CHECK_CONFIGURATION_FILENAME
-        checkName = $env:SYSTEM_PHASENAME
         checkDisplayName = $env:SYSTEM_PHASEDISPLAYNAME
         checkDateFormat = $env:CDM_DATE_FORMAT
         checkDateTime = $checkDateTime
         stageName = $env:SYSTEM_STAGENAME
     }
 
-    & ("./{0}/{1}" -f $pipelineConfiguration.checkName, $env:CDM_CHECK_POWERSHELL_FILENAME)
+    & ("./{0}/{1}" -f $env:SYSTEM_PHASENAME, $env:CDM_CHECK_POWERSHELL_FILENAME)
 }
 
 Pop-Location

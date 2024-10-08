@@ -15,6 +15,12 @@ $env:CDM_CHECK_RESULT_FILENAME = "check_results.xml"
 $env:CDM_TASK_SCRIPT_BASENAME = "task"
 $env:CDM_TASK_POWERSHELL_FILENAME = "task.ps1"
 
+$env:ADO_CLIENT_NAME = "The Gym Group"
+$env:ADO_COLLECTION_URI = "https://dev.azure.com/ediamandyw/"
+$env:ADO_PROJECT_NAME = "sre"
+
+$env:SYSTEM_COLLECTIONURI = "https://dev.azure.com/ediamandyw/"
+
 <#
     Static check variables:
     cdm\checks\[check name]pipeline_variables.yml
@@ -24,10 +30,16 @@ $env:CDM_CHECK_SKIP_UNTIL = "04/10/2024 11:17:00"
 <#
     Dynamic pipeline variables:
 #>
+$env:SYSTEM_DEFINITIONNAME = "The Gym Group CDM Checks" 
 $env:SYSTEM_STAGENAME = "nonprod"
-$env:SYSTEM_PHASENAME = "aws_elastic_kubernetes_service"
-$env:SYSTEM_PHASEDISPLAYNAME = "PESTER DESCRIBE NAME"
+$env:SYSTEM_STAGEDISPLAYNAME = "NONPROD"
+$env:SYSTEM_PHASENAME = "terraform"
+$env:SYSTEM_PHASEDISPLAYNAME = "Terraform"
 
+$env:BUILD_BUILDID = "6982"
+$env:BUILD_BUILDNUMBER = "2024.10.04.6"
+$env:SYSTEM_STAGEID = "02cfcda7-55c4-5d00-5661-16255c29a59f"
+$env:SYSTEM_JOBID = "ea0f9399-290c-5137-7726-029e7d80bd1f"
 
 <#
     Sensative variables dot sourced from:
@@ -39,29 +51,4 @@ $env:SYSTEM_PHASEDISPLAYNAME = "PESTER DESCRIBE NAME"
 
 #Get-ChildItem -Path Env:
 
-# cls
-# $a = (Get-Content -Path ".\checks\$env:SYSTEM_PHASENAME\configuration.yml" | ConvertFrom-Yaml).$env:SYSTEM_PHASENAME
-# $x = (Get-Content -Path ".\checks\$env:SYSTEM_PHASENAME\configuration.json" | ConvertFrom-Json).$env:SYSTEM_PHASENAME
-
-# $b = ($a.stages | Where-Object {$_.name -eq $env:SYSTEM_STAGENAME}).clusters
-# $y = ($x.stages | Where-Object {$_.name -eq $env:SYSTEM_STAGENAME}).clusters
-
-
-# $clusters = [System.Collections.ArrayList]@()
-
-# foreach ($cluster in ($a.stages | Where-Object {$_.name -eq $env:SYSTEM_STAGENAME}).clusters) {
-
-# $clusterObject = [ordered] @{
-#     resourceGroupName = $cluster.resourceGroupName
-#     resourceName = $cluster.resourceName
-# }
-
-# $cluster = New-Object PSObject -property $clusterObject
-# $clusters.Add($cluster)
-# }
-
-# $clusters | gm
-# ""
-# $y | gm
-
-# Compare-Object -ReferenceObject $clusters -DifferenceObject $y -PassThru
+cls

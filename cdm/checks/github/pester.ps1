@@ -8,7 +8,6 @@ BeforeDiscovery {
     . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("PowerShellForGitHub", "powershell-yaml")
 
     $checkConfigurationFilename = $pipelineConfiguration.checkConfigurationFilename
-    $checkName = $pipelineConfiguration.checkName
 
     # loading check configuration
     if (-not (Test-Path -Path $checkConfigurationFilename)) {

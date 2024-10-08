@@ -33,8 +33,10 @@ parameters:
             variableGroups:
             tasks:
               installTaskctl: false
-              powershellEnvVariables:
-              uploadCheckResults: true
+              powershellCheckEnvVariables:
+              powershellADOEnvVariables:
+                ADO_TOKEN: $(ADO_TOKEN)
+              createADOWorkItem: true
           - name: github
             displayName: 'GitHub'
             dependsOn: []
@@ -42,18 +44,22 @@ parameters:
               - github-creds
             tasks:
               installTaskctl: false
-              powershellEnvVariables:
+              powershellCheckEnvVariables:
                 GITHUB_TOKEN: $(GITHUB_TOKEN)
-              uploadCheckResults: true
+              powershellADOEnvVariables:
+                ADO_TOKEN: $(ADO_TOKEN)
+              createADOWorkItem: true
           - name: azure_devops
             displayName: 'Azure DevOps'
             dependsOn: []
             variableGroups:
             tasks:
               installTaskctl: false
-              powershellEnvVariables:
+              powershellCheckEnvVariables:
                 SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-              uploadCheckResults: true
+              powershellADOEnvVariables:
+                ADO_TOKEN: $(ADO_TOKEN)
+              createADOWorkItem: true
       - name: nonprod
         displayName: 'NONPROD'
         dependsOn: ['build']
@@ -67,18 +73,22 @@ parameters:
             variableGroups:
             tasks:
               installTaskctl: false
-              powershellEnvVariables:
+              powershellCheckEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              uploadCheckResults: true
+              powershellADOEnvVariables:
+                ADO_TOKEN: $(ADO_TOKEN)
+              createADOWorkItem: true
           - name: azure_application_gateway
             displayName: 'Azure Application Gateway'
             dependsOn: []
             variableGroups:
             tasks:
               installTaskctl: false
-              powershellEnvVariables:
+              powershellCheckEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              uploadCheckResults: true
+              powershellADOEnvVariables:
+                ADO_TOKEN: $(ADO_TOKEN)
+              createADOWorkItem: true
           - name: aws_elastic_kubernetes_service
             displayName: 'AWS Elastic Kubernetes Service'
             dependsOn: []
@@ -86,10 +96,12 @@ parameters:
               - aws-creds
             tasks:
               installTaskctl: false
-              powershellEnvVariables:
+              powershellCheckEnvVariables:
                 AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
                 AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-              uploadCheckResults: true
+              powershellADOEnvVariables:
+                ADO_TOKEN: $(ADO_TOKEN)
+              createADOWorkItem: true
       - name: prod
         displayName: 'PROD'
         dependsOn: ['build']
@@ -103,18 +115,22 @@ parameters:
             variableGroups:
             tasks:
               installTaskctl: false
-              powershellEnvVariables:
+              powershellCheckEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              uploadCheckResults: true
+              powershellADOEnvVariables:
+                ADO_TOKEN: $(ADO_TOKEN)
+              createADOWorkItem: true
           - name: azure_application_gateway
             displayName: 'Azure Application Gateway'
             dependsOn: []
             variableGroups:
             tasks:
               installTaskctl: false
-              powershellEnvVariables:
+              powershellCheckEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-              uploadCheckResults: true
+              powershellADOEnvVariables:
+                ADO_TOKEN: $(ADO_TOKEN)
+              createADOWorkItem: true
           - name: digicert
             displayName: 'Digicert'
             dependsOn: []
@@ -122,9 +138,11 @@ parameters:
               - digicert
             tasks:
               installTaskctl: false
-              powershellEnvVariables:
+              powershellCheckEnvVariables:
                 DIGICERT_API_KEY: $(DIGICERT_API_KEY)
-              uploadCheckResults: true
+              powershellADOEnvVariables:
+                ADO_TOKEN: $(ADO_TOKEN)
+              createADOWorkItem: true
           - name: aws_elastic_kubernetes_service
             displayName: 'AWS Elastic Kubernetes Service'
             dependsOn: []
@@ -132,13 +150,17 @@ parameters:
               - aws-creds
             tasks:
               installTaskctl: false
-              powershellEnvVariables:
+              powershellCheckEnvVariables:
                 AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
                 AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-              uploadCheckResults: true
+              powershellADOEnvVariables:
+                ADO_TOKEN: $(ADO_TOKEN)
+              createADOWorkItem: true
 
 variables:
   - template: templates/variables/cdm_checks_pipeline_variables.yml
+
+  - group: 'ensono-digital-sre-ado'
 
   - name: isPR
     value: $[startsWith(variables['Build.SourceBranch'], 'refs/pull')]
@@ -188,7 +210,7 @@ stages:
                       - ${{ each group in job.variableGroups}}:
                           - group: ${{ group }}
                   - template: '../../${{ variables.cdm_checks_directory }}/${{ job.name }}/pipeline_variables.yml'
-                  - name: working_directory
+                  - name: cdm_checks_working_directory
                     value: '$(Build.SourcesDirectory)/$(cdm_checks_directory)'
 
                 steps:
@@ -201,20 +223,33 @@ stages:
                     displayName: 'RUN: CDM Check'
                     inputs:
                       targetType: 'filePath'
-                      workingDirectory: $(working_directory)
-                      filePath: '$(working_directory)/Invoke-CDMCheck.ps1'
+                      workingDirectory: $(cdm_checks_working_directory)
+                      filePath: '$(cdm_checks_working_directory)/Invoke-CDMCheck.ps1'
                     env:
-                      ${{ if job.tasks.powershellEnvVariables }}:
-                        ${{ each variable in job.tasks.powershellEnvVariables }}:
+                      ${{ if job.tasks.powershellCheckEnvVariables }}:
+                        ${{ each variable in job.tasks.powershellCheckEnvVariables }}:
                           ${{ insert }}:
                             ${{ variable.key }}: ${{ variable.value }}
 
-                  - ${{ if eq(job.tasks.uploadCheckResults, true) }}:
-                      - task: PublishTestResults@2
-                        displayName: 'PUBLISH: CDM Check Results'
-                        condition: succeededOrFailed()
+                  - ${{ if eq(job.tasks.createADOWorkItem, true) }}:
+                      - task: PowerShell@2
+                        displayName: 'CREATE: ADO Work Item'
+                        condition: failed()
                         inputs:
-                          testRunTitle: '${{ stage.displayName }} - ${{ job.displayName }}'
-                          testResultsFormat: 'NUnit'
-                          testResultsFiles: '$(working_directory)/${{ job.name }}/$(CDM_check_result_filename)'
-                          failTaskOnFailureToPublishResults: true
+                          targetType: 'filePath'
+                          workingDirectory: $(cdm_checks_working_directory)
+                          filePath: '$(cdm_checks_working_directory)/Invoke-ADOWorkItem.ps1'
+                        env:
+                          ${{ if job.tasks.powershellADOEnvVariables }}:
+                            ${{ each variable in job.tasks.powershellADOEnvVariables }}:
+                              ${{ insert }}:
+                                ${{ variable.key }}: ${{ variable.value }}
+
+                  - task: PublishTestResults@2
+                    displayName: 'PUBLISH: CDM Check Results'
+                    condition: succeededOrFailed()
+                    inputs:
+                      testRunTitle: '${{ stage.displayName }} - ${{ job.displayName }}'
+                      testResultsFormat: 'NUnit'
+                      testResultsFiles: '$(cdm_checks_working_directory)/${{ job.name }}/$(CDM_check_result_filename)'
+                      failTaskOnFailureToPublishResults: true

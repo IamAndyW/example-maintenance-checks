@@ -8,7 +8,6 @@ BeforeDiscovery {
     . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.Aks","powershell-yaml")
 
     $checkConfigurationFilename = $pipelineConfiguration.checkConfigurationFilename
-    $checkName = $pipelineConfiguration.checkName
     $stageName = $pipelineConfiguration.stageName
 
     # loading check configuration
