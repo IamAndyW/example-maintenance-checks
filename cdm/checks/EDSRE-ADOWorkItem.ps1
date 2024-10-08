@@ -9,7 +9,7 @@ Push-Location -Path $PSScriptRoot
 . ../../powershell/functions/Get-ADOWorkItemById.ps1
 . ../../powershell/functions/Link-ADOWorkItemToParent.ps1
 
-$adoConfiguration.Add('clientName', $env:ADO_CLIENT_NAME)
+$adoConfiguration.Add('clientName', $env:ADO_WORKITEM_CLIENT_NAME)
 
 $script:wiTitle = ("{0}: {1} {2} FAILED" -f $env:SYSTEM_DEFINITIONNAME, $env:SYSTEM_STAGEDISPLAYNAME, $env:SYSTEM_PHASEDISPLAYNAME)
 $script:wiUserStoryQuery = ("Select [System.Id], [System.Title], [System.WorkItemType], [System.State] From WorkItems WHERE [System.WorkItemType] = 'User Story' AND [System.Title] = '{0}' AND [State] <> 'Closed' AND [State] <> 'Removed'" -f $wiTitle)
@@ -31,7 +31,7 @@ if ($wiUserStories.workItems.Count -eq 0) {
     foreach ($wiThemeChildId in $wiThemes.workItemRelations.target.id) {
         $wiThemeChild = Get-ADOWorkItemById -baseURL $adoConfiguration.baseURL -systemAccessToken $adoConfiguration.accessToken -wiId $wiThemeChildId
         
-        if ($wiThemeChild.fields.'System.Title' -eq $edSREClient) {
+        if ($wiThemeChild.fields.'System.Title' -eq $adoConfiguration.clientName) {
             foreach ($wiEpicChildLink in $wiThemeChild.relations | Where-Object {$_.rel -eq "System.LinkTypes.Hierarchy-Forward"}) {
             $wiEpicChild = Get-ADOWorkItemById -baseURL $adoConfiguration.baseURL -systemAccessToken $adoConfiguration.accessToken -wiId (Split-Path -Path $wiEpicChildLink.url -Leaf)
                 

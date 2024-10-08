@@ -15,11 +15,10 @@ $env:CDM_CHECK_RESULT_FILENAME = "check_results.xml"
 $env:CDM_TASK_SCRIPT_BASENAME = "task"
 $env:CDM_TASK_POWERSHELL_FILENAME = "task.ps1"
 
-$env:ADO_CLIENT_NAME = "The Gym Group"
-$env:ADO_COLLECTION_URI = "https://dev.azure.com/ediamandyw/"
-$env:ADO_PROJECT_NAME = "sre"
-
-$env:SYSTEM_COLLECTIONURI = "https://dev.azure.com/ediamandyw/"
+$env:ADO_WORKITEM_CLIENT_NAME = "The Gym Group"
+$env:ADO_WORKITEM_COLLECTION_URI = "https://dev.azure.com/ensonodigitaluk/"
+$env:ADO_WORKITEM_PROJECT_NAME = "sre"
+$env:ADO_WORKITEM_POWERSHELL_FILENAME = "EDSRE-ADOWorkItem.ps1"
 
 <#
     Static check variables:
@@ -33,8 +32,8 @@ $env:CDM_CHECK_SKIP_UNTIL = "04/10/2024 11:17:00"
 $env:SYSTEM_DEFINITIONNAME = "The Gym Group CDM Checks" 
 $env:SYSTEM_STAGENAME = "nonprod"
 $env:SYSTEM_STAGEDISPLAYNAME = "NONPROD"
-$env:SYSTEM_PHASENAME = "terraform"
-$env:SYSTEM_PHASEDISPLAYNAME = "Terraform"
+$env:SYSTEM_PHASENAME = "github"
+$env:SYSTEM_PHASEDISPLAYNAME = "GitHub"
 
 $env:BUILD_BUILDID = "6982"
 $env:BUILD_BUILDNUMBER = "2024.10.04.6"
