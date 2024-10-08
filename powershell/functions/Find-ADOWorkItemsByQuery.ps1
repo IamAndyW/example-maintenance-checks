@@ -9,14 +9,14 @@ Function Find-ADOWorkItemsByQuery {
         [Parameter(Mandatory=$false)]
         [string]$apiVersion = "7.1",
 
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory=$true)]
         [ValidateScript({            
             If ([uri]::IsWellFormedUriString($_,[urikind]::Absolute)) {return $true}
         })]
-        [string]$baseURL = ("{0}{1}" -f $env:SYSTEM_COLLECTIONURI, $env:SYSTEM_TEAMPROJECT),
+        [string]$baseURL,
 
-        [Parameter(Mandatory=$false)]
-        [string]$systemAccessToken = $env:SYSTEM_ACCESSTOKEN,
+        [Parameter(Mandatory=$true)]
+        [string]$systemAccessToken,
         
         [Parameter(Mandatory=$true)]
         [string]$wiQuery

@@ -7,13 +7,17 @@ variables:
   - name: taskctl_version
     value: '1.5.4'
 
-  # ado
-  - name: ado_client_name
-    value: 'The Gym Group'
-  - name: ado_collection_uri
+  # ado work items
+  - name: ado_workitem_collection_uri
     value: 'https://dev.azure.com/ensonodigitaluk/'
-  - name: ado_project_name
+  - name: ado_workitem_project_name
     value: 'sre'
+  - name: ado_workitem_access_token
+    value: '$(System.AccessToken)'
+  - name: ado_workitem_powershell_filename
+    value: 'EDSRE-ADOWorkItem.ps1'
+  - name: ado_workitem_client_name
+    value: 'The Gym Group'
 
   # cdm
   - name: cdm_directory

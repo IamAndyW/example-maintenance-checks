@@ -12,7 +12,7 @@ Push-Location -Path $PSScriptRoot
 $script:pesterFilename = 'pester.ps1'
 
 # configuration available in the discovery and run phases of Pester
-$pipelineConfiguration.Add('adoAccessToken', $env:SYSTEM_ACCESSTOKEN)
+$pipelineConfiguration.Add('adoAccessToken', $env:ADO_ACCESS_TOKEN)
 
 $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
     pipelineConfiguration = $pipelineConfiguration

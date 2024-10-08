@@ -35,7 +35,7 @@ parameters:
               installTaskctl: false
               powershellCheckEnvVariables:
               powershellADOEnvVariables:
-                ADO_TOKEN: $(ADO_TOKEN)
+                ADO_ACCESS_TOKEN: $(ado_workitem_access_token)
               createADOWorkItem: true
           - name: github
             displayName: 'GitHub'
@@ -47,7 +47,7 @@ parameters:
               powershellCheckEnvVariables:
                 GITHUB_TOKEN: $(GITHUB_TOKEN)
               powershellADOEnvVariables:
-                ADO_TOKEN: $(ADO_TOKEN)
+                ADO_ACCESS_TOKEN: $(ado_workitem_access_token)
               createADOWorkItem: true
           - name: azure_devops
             displayName: 'Azure DevOps'
@@ -56,9 +56,9 @@ parameters:
             tasks:
               installTaskctl: false
               powershellCheckEnvVariables:
-                SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                ADO_ACCESS_TOKEN: $(System.AccessToken)
               powershellADOEnvVariables:
-                ADO_TOKEN: $(ADO_TOKEN)
+                ADO_ACCESS_TOKEN: $(ado_workitem_access_token)
               createADOWorkItem: true
       - name: nonprod
         displayName: 'NONPROD'
@@ -76,7 +76,7 @@ parameters:
               powershellCheckEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
-                ADO_TOKEN: $(ADO_TOKEN)
+                ADO_ACCESS_TOKEN: $(ado_workitem_access_token)
               createADOWorkItem: true
           - name: azure_application_gateway
             displayName: 'Azure Application Gateway'
@@ -87,7 +87,7 @@ parameters:
               powershellCheckEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
-                ADO_TOKEN: $(ADO_TOKEN)
+                ADO_ACCESS_TOKEN: $(ado_workitem_access_token)
               createADOWorkItem: true
           - name: aws_elastic_kubernetes_service
             displayName: 'AWS Elastic Kubernetes Service'
@@ -100,7 +100,7 @@ parameters:
                 AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
                 AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               powershellADOEnvVariables:
-                ADO_TOKEN: $(ADO_TOKEN)
+                ADO_ACCESS_TOKEN: $(ado_workitem_access_token)
               createADOWorkItem: true
       - name: prod
         displayName: 'PROD'
@@ -118,7 +118,7 @@ parameters:
               powershellCheckEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
-                ADO_TOKEN: $(ADO_TOKEN)
+                ADO_ACCESS_TOKEN: $(ado_workitem_access_token)
               createADOWorkItem: true
           - name: azure_application_gateway
             displayName: 'Azure Application Gateway'
@@ -129,7 +129,7 @@ parameters:
               powershellCheckEnvVariables:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
-                ADO_TOKEN: $(ADO_TOKEN)
+                ADO_ACCESS_TOKEN: $(ado_workitem_access_token)
               createADOWorkItem: true
           - name: digicert
             displayName: 'Digicert'
@@ -141,7 +141,7 @@ parameters:
               powershellCheckEnvVariables:
                 DIGICERT_API_KEY: $(DIGICERT_API_KEY)
               powershellADOEnvVariables:
-                ADO_TOKEN: $(ADO_TOKEN)
+                ADO_ACCESS_TOKEN: $(ado_workitem_access_token)
               createADOWorkItem: true
           - name: aws_elastic_kubernetes_service
             displayName: 'AWS Elastic Kubernetes Service'
@@ -154,13 +154,13 @@ parameters:
                 AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
                 AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               powershellADOEnvVariables:
-                ADO_TOKEN: $(ADO_TOKEN)
+                ADO_ACCESS_TOKEN: $(ado_workitem_access_token)
               createADOWorkItem: true
 
 variables:
   - template: templates/variables/cdm_checks_pipeline_variables.yml
 
-  - group: 'ensono-digital-sre-ado'
+  #  - group: 'ensono-digital-sre-ado'
 
   - name: isPR
     value: $[startsWith(variables['Build.SourceBranch'], 'refs/pull')]
