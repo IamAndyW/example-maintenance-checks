@@ -1,23 +1,11 @@
 variables:
-  # ADO
-  - name: ado_vm_image
+  # pipeline
+  - name: pipeline_vm_image
     value: 'ubuntu-22.04'
 
   # taskctl
   - name: taskctl_version
     value: '1.5.4'
-
-  # ado work items
-  - name: ado_workitem_collection_uri
-    value: 'https://dev.azure.com/ensonodigitaluk/'
-  - name: ado_workitem_project_name
-    value: 'sre'
-  - name: ado_workitem_access_token
-    value: '$(System.AccessToken)'
-  - name: ado_workitem_powershell_filename
-    value: 'EDSRE-ADOWorkItem.ps1'
-  - name: ado_workitem_client_name
-    value: 'The Gym Group'
 
   # cdm
   - name: cdm_directory
@@ -30,11 +18,17 @@ variables:
   # checks
   - name: cdm_checks_directory
     value: '${{ variables.cdm_directory }}/checks'
-  - name: cdm_check_script_basename
-    value: 'check'
-  - name: cdm_check_powershell_filename
-    value: '$(cdm_check_script_basename).ps1'
-  - name: cdm_check_configuration_filename
-    value: 'configuration.yml'
   - name: cdm_check_result_filename
-    value: '$(cdm_check_script_basename)_results.xml'
+    value: 'results.xml'
+
+  # ado integration
+  - name: ado_integration_directory
+    value: 'integrations/ado'
+  - name: ado_organisation_name
+    value: 'ensonodigitaluk'
+  - name: ado_project_name
+    value: 'sre'
+  - name: ado_client_name
+    value: 'The Gym Group'
+  - name: ado_access_token
+    value: '$(System.AccessToken)'

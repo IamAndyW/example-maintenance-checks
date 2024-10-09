@@ -38,7 +38,7 @@ terraform.rc
 
 
 # Pester check results
-check_results.xml
+results.xml
 
 # custom
 envvars_sensative.ps1

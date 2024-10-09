@@ -1,0 +1,8 @@
+create-workitem:
+  parentMappings:
+    - clientName: 'The Gym Group'
+      terraform: 'Terraform'
+      github: 'Security / Vulnerabilities'
+      digicert: 'Load Balancer Certificate Rotation'
+      azure_kubernetes_service: 'AKS Clusters/ingress-nginx'
+      azure_application_gateway: 'Load Balancer Certificate Rotation'

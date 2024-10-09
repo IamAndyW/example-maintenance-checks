@@ -7,7 +7,7 @@ BeforeDiscovery {
     # installing dependencies
     . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("powershell-yaml")
     
-    $checkConfigurationFilename = $pipelineConfiguration.checkConfigurationFilename
+    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
 
     # loading check configuration
     if (-not (Test-Path -Path $checkConfigurationFilename)) {
@@ -20,7 +20,7 @@ BeforeDiscovery {
     $discovery = $checkConfiguration
 }
 
-Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
+Describe $pipelineConfiguration.displayName -ForEach $discovery {
 
     BeforeAll {
         $parameters = @{
@@ -61,7 +61,7 @@ Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
             $response = Invoke-RestMethod @parameters
 
             ($response.validations | Where-Object {$_.type -eq "ov"}).validated_until |
-                Should -BeGreaterThan $pipelineConfiguration.checkDateTime.AddDays($_.ordersExpiringRenewBeforeInDays)
+                Should -BeGreaterThan $pipelineConfiguration.dateTime.AddDays($_.ordersExpiringRenewBeforeInDays)
         }
 
         AfterEach {
@@ -112,7 +112,7 @@ Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
     }
 
     AfterAll {
-        Write-Host ("`nRunbook: {0}`n" -f $_.runbook)
+        Write-Information -MessageData ("`nRunbook: {0}`n" -f $_.runbook)
         
         Clear-Variable -Name "parameters"
         Clear-Variable -Name "baseURL"

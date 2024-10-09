@@ -16,18 +16,19 @@ Function Find-ADOWorkItemsByQuery {
         [string]$baseURL,
 
         [Parameter(Mandatory=$true)]
-        [string]$systemAccessToken,
+        [string]$accessToken,
         
         [Parameter(Mandatory=$true)]
         [string]$wiQuery
     )
+
+    $ErrorActionPreference = "Stop"
 
     $parameters = @{
         method = "POST"
         headers = $headers
     }
 
-    $accessToken = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$($systemAccessToken)"))
     $queryParameters = ("api-version={0}" -f $apiVersion)
     
     $parameters.Add('uri', ("{0}/_apis/{1}?{2}" -f $baseURL, "wit/wiql", $queryParameters))
@@ -35,6 +36,10 @@ Function Find-ADOWorkItemsByQuery {
     $parameters.Add('body', $(@{query = ("{0}" -f $wiQuery)} | ConvertTo-Json))
     
     $response = Invoke-RestMethod @parameters | Write-Output
+
+    if ($response.GetType().Name -ne "PSCustomObject") {
+        throw ("Expected API response object of '{0}' but got '{1}'" -f "PSCustomObject", $response.GetType().Name)
+    }
     
     return $response
 }

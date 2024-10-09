@@ -7,7 +7,7 @@ BeforeDiscovery {
     # installing dependencies
     . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("PowerShellForGitHub", "powershell-yaml")
 
-    $checkConfigurationFilename = $pipelineConfiguration.checkConfigurationFilename
+    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
 
     # loading check configuration
     if (-not (Test-Path -Path $checkConfigurationFilename)) {
@@ -46,19 +46,19 @@ BeforeDiscovery {
         repositories = $repositories
     }
 
-    $dateThreshold = $pipelineConfiguration.checkDateTime.AddDays(-$checkConfiguration.dependabotPRStaleInDays)
+    $dateThreshold = $pipelineConfiguration.dateTime.AddDays(-$checkConfiguration.dependabotPRStaleInDays)
 }
 
-Describe "$($pipelineConfiguration.checkDisplayName) / <_.owner>" -ForEach $discovery {
+Describe "$($pipelineConfiguration.displayName) / <_.owner>" -ForEach $discovery {
 
     Context "Repository: '<_.repositoryName>'" -ForEach $_.repositories {
 
         BeforeAll {
-            Write-Host "`n"
-            $dateThreshold = $pipelineConfiguration.checkDateTime.AddDays(-$_.dependabotPRStaleInDays)
+            Write-Information -MessageData "`n"
+            $dateThreshold = $pipelineConfiguration.dateTime.AddDays(-$_.dependabotPRStaleInDays)
         }
 
-        It "Dependabot PR '<_.title>' creation date should not be older than $($dateThreshold.ToString($pipelineConfiguration.checkDateFormat))" -ForEach $_.pullRequests {
+        It "Dependabot PR '<_.title>' creation date should not be older than $($dateThreshold.ToString($pipelineConfiguration.dateFormat))" -ForEach $_.pullRequests {
             $_.created_at | Should -BeGreaterThan $dateThreshold
         }
 
@@ -67,13 +67,13 @@ Describe "$($pipelineConfiguration.checkDisplayName) / <_.owner>" -ForEach $disc
         }
 
         AfterAll {
-            Write-Host ("`nGitHub Pull Request link: http://github.com/{0}/{1}/pulls" -f $_.owner, $_.repositoryName)
+            Write-Information -MessageData ("`nGitHub Pull Request link: http://github.com/{0}/{1}/pulls" -f $_.owner, $_.repositoryName)
             Clear-Variable -Name "dateThreshold"
         }
     }
 
     AfterAll {
-        Write-Host ("`nRunbook: {0}`n" -f $_.runbook)
+        Write-Information -MessageData ("`nRunbook: {0}`n" -f $_.runbook)
     }
 }
 

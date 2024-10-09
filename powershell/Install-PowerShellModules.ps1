@@ -6,16 +6,16 @@ param(
 )
 
 foreach ($moduleName in $moduleNames) {
-    Write-Host ("`nModule name: {0}" -f $moduleName)
+    Write-Information -MessageData ("`nModule name: {0}" -f $moduleName)
     
     $module = Get-Module -Name $moduleName -ListAvailable
 
     if ($null -eq $module) {
-        Write-Host ("Installing module`n") -ForegroundColor Yellow
+        Write-Information -MessageData ("Installing module`n")
         Install-Module -Name $moduleName -Scope CurrentUser -PassThru -Repository PSGallery -Force
         Import-Module -Name $moduleName -Force
     } else {
-        Write-Host ("Module already installed with version: {0}`n" -f $module.Version) -ForegroundColor Yellow
+        Write-Information -MessageData ("Module already installed with version: {0}`n" -f $module.Version)
         Import-Module -Name $moduleName -Force
     }
 }

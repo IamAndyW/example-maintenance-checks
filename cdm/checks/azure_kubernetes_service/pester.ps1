@@ -7,7 +7,7 @@ BeforeDiscovery {
     # installing dependencies
     . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.Aks","powershell-yaml")
 
-    $checkConfigurationFilename = $pipelineConfiguration.checkConfigurationFilename
+    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
     $stageName = $pipelineConfiguration.stageName
 
     # loading check configuration
@@ -31,7 +31,7 @@ BeforeAll {
         -clientSecret $pipelineConfiguration.armClientSecret
 }
 
-Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
+Describe $pipelineConfiguration.displayName -ForEach $discovery {
 
     BeforeAll {        
         $versionThreshold = $_.versionThreshold    
@@ -66,14 +66,14 @@ Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
         }
 
         AfterAll {
-            Write-Host ("`nCurrent version {0}" -f $currentVersion)
+            Write-Information -MessageData ("`nCurrent version {0}" -f $currentVersion)
 
-            Write-Host("`nTarget versions (n-{0}) for {1}" -f $versionThreshold, $resourceRegion)
+            Write-Information -MessageData("`nTarget versions (n-{0}) for {1}" -f $versionThreshold, $resourceRegion)
             foreach ($version in $targetVersions) {
-                Write-Host $version
+                Write-Information -MessageData $version
             }
 
-            Write-Host ""
+            Write-Information -MessageData ""
             
             Clear-Variable -Name "resourceGroupName"
             Clear-Variable -Name "resourceName"
@@ -84,7 +84,7 @@ Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
     }
 
     AfterAll {
-        Write-Host ("`nRunbook: {0}`n" -f $_.runbook)
+        Write-Information -MessageData ("`nRunbook: {0}`n" -f $_.runbook)
         
         Clear-Variable -Name "versionThreshold"
     }

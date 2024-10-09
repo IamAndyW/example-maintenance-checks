@@ -7,7 +7,7 @@ BeforeDiscovery {
         # installing dependencies
         . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("powershell-yaml")
 
-    $checkConfigurationFilename = $pipelineConfiguration.checkConfigurationFilename
+    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
 
     # loading check configuration
     if (-not (Test-Path -Path $checkConfigurationFilename)) {
@@ -20,7 +20,7 @@ BeforeDiscovery {
     $discovery = $checkConfiguration
 } 
 
-Describe "$($pipelineConfiguration.checkDisplayName) / <_.organisation>" -ForEach $discovery {
+Describe "$($pipelineConfiguration.displayName) / <_.organisation>" -ForEach $discovery {
 
     BeforeAll {
         $accessToken = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$($pipelineConfiguration.adoAccessToken)"))
@@ -72,7 +72,7 @@ Describe "$($pipelineConfiguration.checkDisplayName) / <_.organisation>" -ForEac
     }
 
     AfterAll {
-        Write-Host ("`nRunbook: {0}`n" -f $_.runbook)
+        Write-Information -MessageData ("`nRunbook: {0}`n" -f $_.runbook)
 
         Clear-Variable -Name "accessToken"
         Clear-Variable -Name "parameters"

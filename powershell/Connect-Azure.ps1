@@ -24,4 +24,4 @@ $credential = New-Object -TypeName System.Management.Automation.PSCredential -Ar
 Connect-AzAccount -ServicePrincipal -TenantId $tenantId -Credential $credential -Subscription $subscriptionId
 
 $azContext = Get-AzContext
-return Write-Host ("`nTenantId: {0}`nSubscription Name: {1}" -f $azContext.Tenant.Id, $azContext.Subscription.Name)
+return Write-Information -MessageData ("`nTenantId: {0}`nSubscription Name: {1}" -f $azContext.Tenant.Id, $azContext.Subscription.Name)

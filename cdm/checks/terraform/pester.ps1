@@ -7,7 +7,7 @@ BeforeDiscovery {
     # installing dependencies
     . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("powershell-yaml")
 
-    $checkConfigurationFilename = $pipelineConfiguration.checkConfigurationFilename
+    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
 
     # loading check configuration
     if (-not (Test-Path -Path $checkConfigurationFilename)) {
@@ -20,7 +20,7 @@ BeforeDiscovery {
     $discovery = $checkConfiguration
 } 
 
-Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
+Describe $pipelineConfiguration.displayName -ForEach $discovery {
 
     Context "Required Version: <_>" -ForEach $_.requiredVersionConstraints {
         BeforeAll {
@@ -51,7 +51,7 @@ Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
     }
 
     AfterAll {
-        Write-Host ("`nInstalled Terraform version: {0}" -f $(terraform --version))
-        Write-Host ("`nRunbook: {0}`n" -f $_.runbook)
+        Write-Information -MessageData ("`nInstalled Terraform version: {0}" -f $(terraform --version))
+        Write-Information -MessageData ("`nRunbook: {0}`n" -f $_.runbook)
     }
 }

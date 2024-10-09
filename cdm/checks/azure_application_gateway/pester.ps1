@@ -7,7 +7,7 @@ BeforeDiscovery {
     # installing dependencies
     . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.Network", "powershell-yaml")
 
-    $checkConfigurationFilename = $pipelineConfiguration.checkConfigurationFilename
+    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
     $stageName = $pipelineConfiguration.stageName
 
     # loading check configuration
@@ -21,7 +21,7 @@ BeforeDiscovery {
     $discovery = $checkConfiguration
     $gateways = $discovery.stages | Where-Object { $_.name -eq $stageName } | Select-Object -ExpandProperty gateways
     
-    $renewalStartDate = $pipelineConfiguration.checkDateTime.AddDays($checkConfiguration.certificateRenewalBeforeInDays)
+    $renewalStartDate = $pipelineConfiguration.dateTime.AddDays($checkConfiguration.certificateRenewalBeforeInDays)
 }
 
 BeforeAll {
@@ -33,10 +33,10 @@ BeforeAll {
         -clientSecret $pipelineConfiguration.armClientSecret
 }
 
-Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
+Describe $pipelineConfiguration.displayName -ForEach $discovery {
 
     BeforeAll {
-        $renewalStartDate = $pipelineConfiguration.checkDateTime.AddDays($_.certificateRenewalBeforeInDays)    
+        $renewalStartDate = $pipelineConfiguration.dateTime.AddDays($_.certificateRenewalBeforeInDays)    
     }
 
     Context "Gateway: <_.resourceGroupName>/<_.resourceName>" -ForEach $gateways {
@@ -73,12 +73,12 @@ Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
             $resource.ProvisioningState | Should -Be "Succeeded"
         }
 
-        It "The certificate expiry date should be later than $($renewalStartDate.ToString($pipelineConfiguration.checkDateFormat))" {    
+        It "The certificate expiry date should be later than $($renewalStartDate.ToString($pipelineConfiguration.dateFormat))" {    
             $certificateExpiryDate | Should -BeGreaterThan $renewalStartDate
         }
 
         AfterAll {
-            Write-Host ("`nApplication Gateway certificate expiry date: {0}`n" -f $certificateExpiryDate.ToString($pipelineConfiguration.checkDateFormat))
+            Write-Information -MessageData ("`nApplication Gateway certificate expiry date: {0}`n" -f $certificateExpiryDate.ToString($pipelineConfiguration.dateFormat))
 
             Clear-Variable -Name "resourceGroupName"
             Clear-Variable -Name "resourceName"
@@ -91,7 +91,7 @@ Describe $pipelineConfiguration.checkDisplayName -ForEach $discovery {
     }
 
     AfterAll {
-        Write-Host ("`nRunbook: {0}`n" -f $_.runbook)
+        Write-Information -MessageData ("`nRunbook: {0}`n" -f $_.runbook)
 
         Clear-Variable -Name "renewalStartDate"
     }
