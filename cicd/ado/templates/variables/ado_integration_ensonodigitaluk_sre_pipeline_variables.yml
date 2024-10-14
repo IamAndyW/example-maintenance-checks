@@ -1,0 +1,12 @@
+variables:
+  # ado integration
+  - name: ado_organisation_name
+    value: 'ensonodigitaluk'
+  - name: ado_project_name
+    value: 'sre'
+  - name: ado_client_name
+    value: 'The Gym Group'
+  # if the ADO integration is within the same organisation as this pipeline then use '$(System.AccessToken)'
+  # if the ADO integration is outside of the organisation running this pipeline, in the target organisation create a perosnal access token (PAT) and store this as a secret
+  - name: ado_access_token
+    value: '$(System.AccessToken)'

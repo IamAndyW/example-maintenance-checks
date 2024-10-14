@@ -10,7 +10,7 @@ Push-Location -Path $PSScriptRoot
 . ../../../powershell/functions/New-ADOWorkItem.ps1
 
 # // START check for existing Product Backlog Item //
-$script:wiTitle = ("{0}: {1} {2} FAILED" -f $env:SYSTEM_DEFINITIONNAME, $env:SYSTEM_STAGEDISPLAYNAME, $env:SYSTEM_PHASEDISPLAYNAME)
+$script:wiTitle = ("{0}: {1} {2} FAILED" -f $(("{0} {1}" -f $adoConfiguration.clientName, "CDM Checks")), $env:SYSTEM_STAGEDISPLAYNAME, $env:SYSTEM_PHASEDISPLAYNAME)
 
 $script:wiPBIQuery = (
     "Select [System.Id],
@@ -32,7 +32,9 @@ if ($wiPBIs.workItems.Count -eq 0) {
     Write-Information -MessageData ("Creating a new work item with name '{0}'" -f $wiTitle)
 
     # // START discover work item parent //
-    . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("powershell-yaml")
+    # to avoid a potential clash with the YamlDotNet libary always load the module 'powershell-yaml' last
+    . ../../../powershell/functions/Install-PowerShellModules.ps1
+    Install-PowerShellModules -moduleNames ("powershell-yaml")
 
     $script:parentMappings = (Get-Content -Path $adoConfiguration.configurationFilename |
         ConvertFrom-Yaml).($adoConfiguration.action).parentMappings |
@@ -79,6 +81,11 @@ if ($wiPBIs.workItems.Count -eq 0) {
             path = "/fields/System.Description"
             from = $null
             value = ("{0}" -f $wiDescription)
+        }
+        @{
+            "op"    = "add"
+            "path"  = "/fields/System.State"
+            "value" = "Refinement"
         }
         @{
             op = "add"

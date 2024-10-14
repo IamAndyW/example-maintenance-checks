@@ -6,7 +6,8 @@
 Push-Location -Path $PSScriptRoot
 
 # installing dependencies
-. ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Pester")
+. ../../../powershell/functions/Install-PowerShellModules.ps1
+Install-PowerShellModules -moduleNames ("Pester")
 
 # setting variables
 $script:pesterFilename = 'pester.ps1'
@@ -30,7 +31,7 @@ $script:pesterConfiguration = [PesterConfiguration] @{
     TestResult = @{
         Enabled      = $true
         OutputFormat = "NUnitXml"
-        OutputPath   = ("{0}/{1}" -f $PSScriptRoot, $env:CDM_CHECK_RESULT_FILENAME)
+        OutputPath   = ("{0}/{1}" -f $PSScriptRoot, $pipelineConfiguration.resultsFilename)
     }
 }
 

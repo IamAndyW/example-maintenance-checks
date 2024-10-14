@@ -4,8 +4,10 @@ param (
 )
 
 BeforeDiscovery {
-        # installing dependencies
-        . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("powershell-yaml")
+    # installing dependencies
+    # to avoid a potential clash with the YamlDotNet libary always load the module 'powershell-yaml' last
+    . ../../../powershell/functions/Install-PowerShellModules.ps1
+    Install-PowerShellModules -moduleNames ("powershell-yaml")
 
     $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
 

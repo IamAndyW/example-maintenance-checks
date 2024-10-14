@@ -5,7 +5,9 @@ param (
 
 BeforeDiscovery {
     # installing dependencies
-    . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.Aks","powershell-yaml")
+    # to avoid a potential clash with the YamlDotNet libary always load the module 'powershell-yaml' last
+    . ../../../powershell/functions/Install-PowerShellModules.ps1
+    Install-PowerShellModules -moduleNames ("Az.Aks", "powershell-yaml")
 
     $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
     $stageName = $pipelineConfiguration.stageName
@@ -24,7 +26,8 @@ BeforeDiscovery {
 
 BeforeAll {
     # Azure authentication
-    . ../../../powershell/Connect-Azure.ps1 `
+    . ../../../powershell/functions/Connect-Azure.ps1
+    Connect-Azure `
         -tenantId $pipelineConfiguration.armTenantId `
         -subscriptionId $pipelineConfiguration.armSubscriptionId `
         -clientId $pipelineConfiguration.armClientId `

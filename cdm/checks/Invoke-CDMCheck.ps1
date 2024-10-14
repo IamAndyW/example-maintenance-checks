@@ -24,6 +24,7 @@ if ($skipUntilDateTime -gt $dateTime) {
 } elseif (Test-Path -Path $checkFileName) {
     $pipelineConfiguration = @{
         configurationFilename = "configuration.yml"
+        resultsFilename = ("{0}_{1}_results.xml" -f $env:SYSTEM_STAGENAME, $env:SYSTEM_PHASENAME)
         displayName = $env:SYSTEM_PHASEDISPLAYNAME
         dateFormat = $env:CDM_DATE_FORMAT
         dateTime = $dateTime

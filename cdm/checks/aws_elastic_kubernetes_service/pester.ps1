@@ -5,11 +5,15 @@ param (
 
 BeforeDiscovery {
     # installing dependencies
-    . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("AWS.Tools.Installer")
+    . ../../../powershell/functions/Install-PowerShellModules.ps1
+    Install-PowerShellModules -moduleNames ("AWS.Tools.Installer")
+    
     Install-AWSToolsModule AWS.Tools.Common, AWS.Tools.EKS -Force
     Import-Module -Name "AWS.Tools.Common" -Force
     Import-Module -Name "AWS.Tools.EKS" -Force
-    . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("powershell-yaml")
+    
+    # to avoid a potential clash with the YamlDotNet libary always load the module 'powershell-yaml' last
+    Install-PowerShellModules -moduleNames ("powershell-yaml")
 
     $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
     $stageName = $pipelineConfiguration.stageName

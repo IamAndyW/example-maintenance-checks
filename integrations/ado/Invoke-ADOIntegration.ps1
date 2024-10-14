@@ -3,7 +3,7 @@
     This is the entrypoint into the CDM check ADO integration which performs validation and sets common configuration.
 
     This script will invoke a custom PowerShell script for the ADO organisation, project and action
-    Example: cdm/integrations/ado/ensonodigitaluk-sre/ADOWorkItem.ps1
+    Example: cdm/integrations/ado/ensonodigitaluk-sre/ADOCreateWorkitem.ps1
 #>
 
 $InformationPreference = "Continue"
@@ -19,10 +19,10 @@ $adoConfiguration = @{
     baseUrl = ("{0}/{1}/{2}" -f "https://dev.azure.com", $env:ADO_ORGANISATION_NAME, $env:ADO_PROJECT_NAME)
     clientName = $env:ADO_CLIENT_NAME
     accessToken = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$($env:ADO_ACCESS_TOKEN)"))
-    action = $env:ADO_ACTION
+    action = $env:ACTION
 }
 
-$script:integrationFileName = ("./{0}-{1}/{2}.ps1" -f $adoConfiguration.organisation, $adoConfiguration.project, $((Get-Culture).TextInfo.ToTitleCase($adoConfiguration.action)))
+$script:integrationFileName = ("./{0}-{1}/{2}.ps1" -f $adoConfiguration.organisation, $adoConfiguration.project, $adoConfiguration.action)
 
 if (Test-Path -Path $integrationFileName) {
     & $integrationFileName

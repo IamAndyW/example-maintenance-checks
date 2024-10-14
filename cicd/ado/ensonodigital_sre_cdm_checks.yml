@@ -74,6 +74,9 @@ parameters:
             tasks:
               installTaskctl: false
               powershellCheckEnvVariables:
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+                ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
@@ -85,6 +88,9 @@ parameters:
             tasks:
               installTaskctl: false
               powershellCheckEnvVariables:
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+                ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
@@ -116,6 +122,9 @@ parameters:
             tasks:
               installTaskctl: false
               powershellCheckEnvVariables:
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+                ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
@@ -127,6 +136,9 @@ parameters:
             tasks:
               installTaskctl: false
               powershellCheckEnvVariables:
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+                ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
@@ -139,6 +151,7 @@ parameters:
             tasks:
               installTaskctl: false
               powershellCheckEnvVariables:
+                DIGICERT_ORGANISATION_ID: $(DIGICERT_ORGANISATION_ID)
                 DIGICERT_API_KEY: $(DIGICERT_API_KEY)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
@@ -159,8 +172,7 @@ parameters:
 
 variables:
   - template: templates/variables/cdm_checks_pipeline_variables.yml
-
-  # - group: 'ensono-digital-sre-ado'
+  - template: templates/variables/ado_integration_ensonodigitaluk_sre_pipeline_variables.yml
 
   - name: isPR
     value: $[startsWith(variables['Build.SourceBranch'], 'refs/pull')]
@@ -240,9 +252,9 @@ stages:
                         inputs:
                           targetType: 'filePath'
                           workingDirectory: $(ado_integration_working_directory)
-                          filePath: '$(ado_integration_working_directory)/Invoke-Integration.ps1'
+                          filePath: '$(ado_integration_working_directory)/Invoke-ADOIntegration.ps1'
                         env:
-                          ADO_ACTION: 'create-workitem'
+                          ACTION: 'ADOCreateWorkItem'
                           ${{ if job.tasks.powershellADOEnvVariables }}:
                             ${{ each variable in job.tasks.powershellADOEnvVariables }}:
                               ${{ insert }}:
@@ -254,5 +266,5 @@ stages:
                     inputs:
                       testRunTitle: '${{ stage.displayName }} - ${{ job.displayName }}'
                       testResultsFormat: 'NUnit'
-                      testResultsFiles: '$(cdm_checks_working_directory)/${{ job.name }}/$(CDM_check_result_filename)'
+                      testResultsFiles: '$(cdm_checks_working_directory)/${{ job.name }}/*.xml'
                       failTaskOnFailureToPublishResults: true

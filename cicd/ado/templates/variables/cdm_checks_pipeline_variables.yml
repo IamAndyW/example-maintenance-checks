@@ -8,27 +8,16 @@ variables:
     value: '1.5.4'
 
   # cdm
-  - name: cdm_directory
-    value: 'cdm'
   - name: cdm_date_format
     value: 'dd/MM/yyyy HH:mm:ss'
-  - name: cdm_date_timezone  # https://www.unicode.org/cldr/charts/45/supplemental/zone_tzid.html
+  # https://www.unicode.org/cldr/charts/45/supplemental/zone_tzid.html
+  - name: cdm_date_timezone
     value: 'Europe/London'
 
   # checks
   - name: cdm_checks_directory
-    value: '${{ variables.cdm_directory }}/checks'
-  - name: cdm_check_result_filename
-    value: 'results.xml'
+    value: 'cdm/checks'
 
   # ado integration
   - name: ado_integration_directory
     value: 'integrations/ado'
-  - name: ado_organisation_name
-    value: 'ensonodigitaluk'
-  - name: ado_project_name
-    value: 'sre'
-  - name: ado_client_name
-    value: 'The Gym Group'
-  - name: ado_access_token
-    value: '$(System.AccessToken)'

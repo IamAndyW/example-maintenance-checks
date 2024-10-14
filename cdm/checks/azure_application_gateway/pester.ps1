@@ -5,7 +5,9 @@ param (
 
 BeforeDiscovery {
     # installing dependencies
-    . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.Network", "powershell-yaml")
+    # to avoid a potential clash with the YamlDotNet libary always load the module 'powershell-yaml' last
+    . ../../../powershell/functions/Install-PowerShellModules.ps1
+    Install-PowerShellModules -moduleNames ("Az.Network", "powershell-yaml")
 
     $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
     $stageName = $pipelineConfiguration.stageName
@@ -26,7 +28,8 @@ BeforeDiscovery {
 
 BeforeAll {
     # Azure authentication
-    . ../../../powershell/Connect-Azure.ps1 `
+    . ../../../powershell/functions/Connect-Azure.ps1
+    Connect-Azure `
         -tenantId $pipelineConfiguration.armTenantId `
         -subscriptionId $pipelineConfiguration.armSubscriptionId `
         -clientId $pipelineConfiguration.armClientId `
@@ -61,7 +64,8 @@ Describe $pipelineConfiguration.displayName -ForEach $discovery {
     
             } else {
                 # installing dependencies
-                . ../../../powershell/Install-PowerShellModules.ps1 -moduleNames ("Az.KeyVault")
+                . ../../../powershell/functions/Install-PowerShellModules.ps1
+                Install-PowerShellModules -moduleNames ("Az.KeyVault")
                 
                 $elements = $keyVaultSecretId.Split('/')
                 $certificateExpiryDate = (Get-AzKeyVaultCertificate -VaultName $elements[2].Split('.')[0] -Name $elements[4]).Expires
