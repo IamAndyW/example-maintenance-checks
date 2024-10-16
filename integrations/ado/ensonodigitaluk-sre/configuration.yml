@@ -1,4 +1,4 @@
-ADOCreateWorkItem:
+CreateWorkItem:
   parentMappings:
     - clientName: 'The Gym Group'
       terraform: 'Terraform'

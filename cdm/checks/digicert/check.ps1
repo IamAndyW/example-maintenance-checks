@@ -13,11 +13,11 @@ Install-PowerShellModules -moduleNames ("Pester")
 $script:pesterFilename = 'pester.ps1'
 
 # configuration available in the discovery and run phases of Pester
-$pipelineConfiguration.Add('digicertAPIkey', $env:DIGICERT_API_KEY)
-$pipelineConfiguration.Add('digicertOrganisationId', $env:DIGICERT_ORGANISATION_ID)
+$parentConfiguration.Add('digicertAPIkey', $env:DIGICERT_API_KEY)
+$parentConfiguration.Add('digicertOrganisationId', $env:DIGICERT_ORGANISATION_ID)
 
 $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
-    pipelineConfiguration = $pipelineConfiguration
+    parentConfiguration = $parentConfiguration
 }
 
 # Pester configuration - https://pester.dev/docs/usage/configuration
@@ -31,7 +31,7 @@ $script:pesterConfiguration = [PesterConfiguration] @{
     TestResult = @{
         Enabled      = $true
         OutputFormat = "NUnitXml"
-        OutputPath   = ("{0}/{1}" -f $PSScriptRoot, $pipelineConfiguration.resultsFilename)
+        OutputPath   = ("{0}/{1}" -f $PSScriptRoot, $parentConfiguration.resultsFilename)
     }
 }
 

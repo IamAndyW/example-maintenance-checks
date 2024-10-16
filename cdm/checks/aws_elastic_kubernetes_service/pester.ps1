@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory = $true)]
-    [hashtable] $pipelineConfiguration
+    [hashtable] $parentConfiguration
 )
 
 BeforeDiscovery {
@@ -15,15 +15,15 @@ BeforeDiscovery {
     # to avoid a potential clash with the YamlDotNet libary always load the module 'powershell-yaml' last
     Install-PowerShellModules -moduleNames ("powershell-yaml")
 
-    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
-    $stageName = $pipelineConfiguration.stageName
+    $configurationFilename = $parentConfiguration.configurationFilename
+    $stageName = $parentConfiguration.stageName
 
     # loading check configuration
-    if (-not (Test-Path -Path $checkConfigurationFilename)) {
-        throw ("Missing configuration file: {0}" -f $checkConfigurationFilename)
+    if (-not (Test-Path -Path $configurationFilename)) {
+        throw ("Missing configuration file: {0}" -f $configurationFilename)
     }
 
-    $checkConfiguration = Get-Content -Path $checkConfigurationFilename | ConvertFrom-Yaml
+    $checkConfiguration = Get-Content -Path $configurationFilename | ConvertFrom-Yaml
 
     # building the discovery objects
     $discovery = $checkConfiguration
@@ -32,10 +32,10 @@ BeforeDiscovery {
 
 BeforeAll {
     # AWS authentication
-    Set-AWSCredential -AccessKey $pipelineConfiguration.awsAccessKeyId -SecretKey $pipelineConfiguration.awsSecretAccessKey 
+    Set-AWSCredential -AccessKey $parentConfiguration.awsAccessKeyId -SecretKey $parentConfiguration.awsSecretAccessKey 
 }
 
-Describe $pipelineConfiguration.displayName -ForEach $discovery {
+Describe $parentConfiguration.displayName -ForEach $discovery {
 
     BeforeAll {
         $versionThreshold = $_.versionThreshold

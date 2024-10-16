@@ -9,7 +9,7 @@ variables:
 
   # cdm
   - name: cdm_date_format
-    value: 'dd/MM/yyyy HH:mm:ss'
+    value: 'dd/MM/yyyy HH:mm'
   # https://www.unicode.org/cldr/charts/45/supplemental/zone_tzid.html
   - name: cdm_date_timezone
     value: 'Europe/London'
@@ -17,6 +17,10 @@ variables:
   # checks
   - name: cdm_checks_directory
     value: 'cdm/checks'
+
+  # tasks
+  - name: cdm_tasks_directory
+    value: 'cdm/tasks'
 
   # ado integration
   - name: ado_integration_directory

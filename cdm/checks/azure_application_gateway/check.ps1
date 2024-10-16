@@ -13,13 +13,13 @@ Install-PowerShellModules -moduleNames ("Pester")
 $script:pesterFilename = 'pester.ps1'
 
 # configuration available in the discovery and run phases of Pester
-$pipelineConfiguration.Add('armTenantId', $env:ARM_TENANT_ID)
-$pipelineConfiguration.Add('armSubscriptionId', $env:ARM_SUBSCRIPTION_ID)
-$pipelineConfiguration.Add('armClientId', $env:ARM_CLIENT_ID)
-$pipelineConfiguration.Add('armClientSecret', $env:ARM_CLIENT_SECRET)
+$parentConfiguration.Add('armTenantId', $env:ARM_TENANT_ID)
+$parentConfiguration.Add('armSubscriptionId', $env:ARM_SUBSCRIPTION_ID)
+$parentConfiguration.Add('armClientId', $env:ARM_CLIENT_ID)
+$parentConfiguration.Add('armClientSecret', $env:ARM_CLIENT_SECRET)
 
 $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
-    pipelineConfiguration = $pipelineConfiguration
+    parentConfiguration = $parentConfiguration
 }
 
 # Pester configuration - https://pester.dev/docs/usage/configuration
@@ -33,7 +33,7 @@ $script:pesterConfiguration = [PesterConfiguration] @{
     TestResult = @{
         Enabled      = $true
         OutputFormat = "NUnitXml"
-        OutputPath   = ("{0}/{1}" -f $PSScriptRoot, $pipelineConfiguration.resultsFilename)
+        OutputPath   = ("{0}/{1}" -f $PSScriptRoot, $parentConfiguration.resultsFilename)
     }
 }
 

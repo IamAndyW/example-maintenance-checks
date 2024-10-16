@@ -13,11 +13,11 @@ Install-PowerShellModules -moduleNames ("Pester")
 $script:pesterFilename = 'pester.ps1'
 
 # configuration available in the discovery and run phases of Pester
-$pipelineConfiguration.Add('awsAccessKeyId', $env:AWS_ACCESS_KEY_ID)
-$pipelineConfiguration.Add('awsSecretAccessKey', $env:AWS_SECRET_ACCESS_KEY)
+$parentConfiguration.Add('awsAccessKeyId', $env:AWS_ACCESS_KEY_ID)
+$parentConfiguration.Add('awsSecretAccessKey', $env:AWS_SECRET_ACCESS_KEY)
 
 $script:pesterContainer = New-PesterContainer -Path $pesterFilename -Data @{
-    pipelineConfiguration = $pipelineConfiguration
+    parentConfiguration = $parentConfiguration
 }
 
 # Pester configuration - https://pester.dev/docs/usage/configuration
@@ -31,7 +31,7 @@ $script:pesterConfiguration = [PesterConfiguration] @{
     TestResult = @{
         Enabled      = $true
         OutputFormat = "NUnitXml"
-        OutputPath   = ("{0}/{1}" -f $PSScriptRoot, $pipelineConfiguration.resultsFilename)
+        OutputPath   = ("{0}/{1}" -f $PSScriptRoot, $parentConfiguration.resultsFilename)
     }
 }
 

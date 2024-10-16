@@ -1,21 +1,14 @@
 name: $(Date:yyyy.MM.dd)$(Rev:.r)
 
 schedules:
-  - cron: "0 7 * * 1-5"
+  - cron: "0 07 * * 1-5"
     displayName: "Weekdays 07:00 (UTC)"
     branches:
       include:
         - main
     always: true
 
-trigger:
-  branches:
-    include:
-      - main
-pr:
-  branches:
-    include:
-      - main
+trigger: none
 
 parameters:
   - name: stages
@@ -24,7 +17,7 @@ parameters:
       - name: general
         displayName: 'General'
         dependsOn: ['build']
-        condition: and(succeeded(), or(eq(variables.isPR, true), eq(variables.isMainBranch, true)))
+        condition: and(succeeded(), eq(variables.isMainBranch, true))
         variableGroups:
         jobs:
           - name: terraform
@@ -63,7 +56,7 @@ parameters:
       - name: nonprod
         displayName: 'NONPROD'
         dependsOn: ['build']
-        condition: and(succeeded(), or(eq(variables.isPR, true), eq(variables.isMainBranch, true)))
+        condition: and(succeeded(), eq(variables.isMainBranch, true))
         variableGroups:
           - azure-sp-creds
         jobs:
@@ -171,8 +164,10 @@ parameters:
               createADOWorkItem: true
 
 variables:
-  - template: templates/variables/cdm_checks_pipeline_variables.yml
+  - template: templates/variables/cdm_pipeline_variables.yml
   - template: templates/variables/ado_integration_ensonodigitaluk_sre_pipeline_variables.yml
+
+  - group: 'ensono-digital-sre-ado'
 
   - name: isPR
     value: $[startsWith(variables['Build.SourceBranch'], 'refs/pull')]
@@ -254,7 +249,7 @@ stages:
                           workingDirectory: $(ado_integration_working_directory)
                           filePath: '$(ado_integration_working_directory)/Invoke-ADOIntegration.ps1'
                         env:
-                          ACTION: 'ADOCreateWorkItem'
+                          ADO_ACTION: 'CreateWorkItem'
                           ${{ if job.tasks.powershellADOEnvVariables }}:
                             ${{ each variable in job.tasks.powershellADOEnvVariables }}:
                               ${{ insert }}:

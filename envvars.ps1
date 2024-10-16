@@ -4,7 +4,7 @@ Push-Location -Path $PSScriptRoot
     Static pipeline variables:
     cicd\ado\templates\variables\pipeline_variables.yml
 #>
-$env:CDM_DATE_FORMAT = "dd/MM/yyyy HH:mm:ss"
+$env:CDM_DATE_FORMAT = "dd/MM/yyyy HH:mm"
 $env:CDM_DATE_TIMEZONE = "GMT Standard Time" # Windows
 
 <#
@@ -15,13 +15,18 @@ $env:ADO_ORGANISATION_NAME = "ensonodigitaluk"
 $env:ADO_PROJECT_NAME = "sre"
 $env:ADO_CLIENT_NAME = "The Gym Group"
 
-$env:ACTION = "ADOCreateWorkItem"
+$env:ADO_ACTION = "CreateWorkItem"
 
 <#
     Static check variables:
     cdm\checks\[check name]pipeline_variables.yml
 #>
-$env:CDM_CHECK_SKIP_UNTIL = "04/10/2024 11:17:00"
+$env:CHECK_SKIP_UNTIL = "16/10/2024 11:40"
+
+<#
+    Task action
+#>
+$env:TASK_ACTION = "StartAKS"
 
 <#
     Dynamic pipeline variables:

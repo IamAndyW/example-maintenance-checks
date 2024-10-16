@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory = $true)]
-    [hashtable] $pipelineConfiguration
+    [hashtable] $parentConfiguration
 )
 
 BeforeDiscovery {
@@ -9,17 +9,17 @@ BeforeDiscovery {
     . ../../../powershell/functions/Install-PowerShellModules.ps1
     Install-PowerShellModules -moduleNames ("PowerShellForGitHub", "powershell-yaml")
 
-    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
+    $configurationFilename = $parentConfiguration.configurationFilename
 
     # loading check configuration
-    if (-not (Test-Path -Path $checkConfigurationFilename)) {
-        throw ("Missing configuration file: {0}" -f $checkConfigurationFilename)
+    if (-not (Test-Path -Path $configurationFilename)) {
+        throw ("Missing configuration file: {0}" -f $configurationFilename)
     }
 
-    $checkConfiguration = Get-Content -Path $checkConfigurationFilename | ConvertFrom-Yaml
+    $checkConfiguration = Get-Content -Path $configurationFilename | ConvertFrom-Yaml
     
     # GitHub authentication
-    $secureString = ($pipelineConfiguration.githubToken | ConvertTo-SecureString -AsPlainText -Force)
+    $secureString = ($parentConfiguration.githubToken | ConvertTo-SecureString -AsPlainText -Force)
     $credential = New-Object System.Management.Automation.PSCredential "username is ignored", $secureString
     Set-GitHubAuthentication -Credential $credential -SessionOnly
 
@@ -48,19 +48,19 @@ BeforeDiscovery {
         repositories = $repositories
     }
 
-    $dateThreshold = $pipelineConfiguration.dateTime.AddDays(-$checkConfiguration.dependabotPRStaleInDays)
+    $dateThreshold = $parentConfiguration.dateTime.AddDays(-$checkConfiguration.dependabotPRStaleInDays)
 }
 
-Describe "$($pipelineConfiguration.displayName) / <_.owner>" -ForEach $discovery {
+Describe "$($parentConfiguration.displayName) / <_.owner>" -ForEach $discovery {
 
     Context "Repository: '<_.repositoryName>'" -ForEach $_.repositories {
 
         BeforeAll {
             Write-Information -MessageData "`n"
-            $dateThreshold = $pipelineConfiguration.dateTime.AddDays(-$_.dependabotPRStaleInDays)
+            $dateThreshold = $parentConfiguration.dateTime.AddDays(-$_.dependabotPRStaleInDays)
         }
 
-        It "Dependabot PR '<_.title>' creation date should not be older than $($dateThreshold.ToString($pipelineConfiguration.dateFormat))" -ForEach $_.pullRequests {
+        It "Dependabot PR '<_.title>' creation date should not be older than $($dateThreshold.ToString($parentConfiguration.dateFormat))" -ForEach $_.pullRequests {
             $_.created_at | Should -BeGreaterThan $dateThreshold
         }
 

@@ -1,0 +1,126 @@
+name: $(Date:yyyy.MM.dd)$(Rev:.r)
+
+schedules:
+  - cron: "0 06 * * 1-5"
+    displayName: "Weekdays 06:00 (UTC)"
+    branches:
+      include:
+        - main
+    always: true
+
+trigger: none
+
+parameters:
+  - name: stages
+    type: object
+    default:
+      - name: nonprod
+        displayName: 'NONPROD'
+        dependsOn: ['build']
+        condition: and(succeeded(), eq(variables.isMainBranch, true))
+        variableGroups:
+          - azure-sp-creds
+        jobs:
+          - name: azure_kubernetes_service
+            displayName: 'Azure Kubernetes Service'
+            dependsOn: []
+            variableGroups:
+            tasks:
+              installTaskctl: false
+              action: StartAKS
+              powershellCheckEnvVariables:
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+                ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+      - name: prod
+        displayName: 'PROD'
+        dependsOn: ['build']
+        condition: and(succeeded(), eq(variables.isMainBranch, true))
+        variableGroups:
+          - azure-sp-creds
+        jobs:
+          - name: azure_kubernetes_service
+            displayName: 'Azure Kubernetes Service'
+            dependsOn: []
+            variableGroups:
+            tasks:
+              installTaskctl: false
+              action: StartAKS
+              powershellCheckEnvVariables:
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+                ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+
+variables:
+  - template: templates/variables/cdm_pipeline_variables.yml
+
+  - name: isPR
+    value: $[startsWith(variables['Build.SourceBranch'], 'refs/pull')]
+  - name: isMainBranch
+    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+
+pool:
+  vmImage: '$(pipeline_vm_image)'
+
+stages:
+  - stage: build
+    displayName: 'Build'
+
+    jobs:
+      - job: validate
+        displayName: 'Validate'
+
+        steps:
+          - template: templates/pipeline/tasks/taskctl_setup.yml
+            parameters:
+              taskctlVersion: $(taskctl_version)
+
+          - task: Bash@3
+            displayName: 'LINT: Code'
+            inputs:
+              targetType: inline
+              script: |
+                taskctl lint
+
+  - ${{ each stage in parameters.stages }}:
+      - stage: ${{ stage.name }}
+        displayName: ${{ stage.displayName }}
+        dependsOn: ${{ stage.dependsOn }}
+        condition: ${{ stage.condition }}
+        variables:
+          - ${{ if stage.variableGroups }}:
+              - ${{ each group in stage.variableGroups }}:
+                  - group: ${{ group }}
+
+        jobs:
+          - ${{ each job in stage.jobs }}:
+              - job: ${{ job.name }}
+                displayName: ${{ job.displayName }}
+                dependsOn: ${{ job.dependsOn }}
+                variables:
+                  - ${{ if job.variableGroups }}:
+                      - ${{ each group in job.variableGroups}}:
+                          - group: ${{ group }}
+                  - name: cdm_tasks_working_directory
+                    value: '$(Build.SourcesDirectory)/$(cdm_tasks_directory)'
+
+                steps:
+                  - ${{ if eq(job.tasks.installTaskctl, true) }}:
+                      - template: templates/pipeline/tasks/taskctl_setup.yml
+                        parameters:
+                          taskctlVersion: $(taskctl_version)
+
+                  - task: PowerShell@2
+                    displayName: 'RUN: CDM Task ${{ job.tasks.action}}'
+                    inputs:
+                      targetType: 'filePath'
+                      workingDirectory: $(cdm_tasks_working_directory)
+                      filePath: '$(cdm_tasks_working_directory)/Invoke-CDMTask.ps1'
+                    env:
+                      TASK_ACTION: ${{ job.tasks.action}}
+                      ${{ if job.tasks.powershellCheckEnvVariables }}:
+                        ${{ each variable in job.tasks.powershellCheckEnvVariables }}:
+                          ${{ insert }}:
+                            ${{ variable.key }}: ${{ variable.value }}

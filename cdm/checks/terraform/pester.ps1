@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory = $true)]
-    [hashtable] $pipelineConfiguration
+    [hashtable] $parentConfiguration
 )
 
 BeforeDiscovery {
@@ -9,20 +9,20 @@ BeforeDiscovery {
     . ../../../powershell/functions/Install-PowerShellModules.ps1
     Install-PowerShellModules -moduleNames ("powershell-yaml")
 
-    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
+    $configurationFilename = $parentConfiguration.configurationFilename
 
     # loading check configuration
-    if (-not (Test-Path -Path $checkConfigurationFilename)) {
-        throw ("Missing configuration file: {0}" -f $checkConfigurationFilename)
+    if (-not (Test-Path -Path $configurationFilename)) {
+        throw ("Missing configuration file: {0}" -f $configurationFilename)
     }
 
-    $checkConfiguration = Get-Content -Path $checkConfigurationFilename | ConvertFrom-Yaml
+    $checkConfiguration = Get-Content -Path $configurationFilename | ConvertFrom-Yaml
 
     # building the discovery objects
     $discovery = $checkConfiguration
 } 
 
-Describe $pipelineConfiguration.displayName -ForEach $discovery {
+Describe $parentConfiguration.displayName -ForEach $discovery {
 
     Context "Required Version: <_>" -ForEach $_.requiredVersionConstraints {
         BeforeAll {

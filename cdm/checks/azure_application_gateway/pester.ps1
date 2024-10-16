@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory = $true)]
-    [hashtable] $pipelineConfiguration
+    [hashtable] $parentConfiguration
 )
 
 BeforeDiscovery {
@@ -9,37 +9,37 @@ BeforeDiscovery {
     . ../../../powershell/functions/Install-PowerShellModules.ps1
     Install-PowerShellModules -moduleNames ("Az.Network", "powershell-yaml")
 
-    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
-    $stageName = $pipelineConfiguration.stageName
+    $configurationFilename = $parentConfiguration.configurationFilename
+    $stageName = $parentConfiguration.stageName
 
     # loading check configuration
-    if (-not (Test-Path -Path $checkConfigurationFilename)) {
-        throw ("Missing configuration file: {0}" -f $checkConfigurationFilename)
+    if (-not (Test-Path -Path $configurationFilename)) {
+        throw ("Missing configuration file: {0}" -f $configurationFilename)
     }
 
-    $checkConfiguration = Get-Content -Path $checkConfigurationFilename | ConvertFrom-Yaml
+    $checkConfiguration = Get-Content -Path $configurationFilename | ConvertFrom-Yaml
     
     # building the discovery objects
     $discovery = $checkConfiguration
     $gateways = $discovery.stages | Where-Object { $_.name -eq $stageName } | Select-Object -ExpandProperty gateways
     
-    $renewalStartDate = $pipelineConfiguration.dateTime.AddDays($checkConfiguration.certificateRenewalBeforeInDays)
+    $renewalStartDate = $parentConfiguration.dateTime.AddDays($checkConfiguration.certificateRenewalBeforeInDays)
 }
 
 BeforeAll {
     # Azure authentication
     . ../../../powershell/functions/Connect-Azure.ps1
     Connect-Azure `
-        -tenantId $pipelineConfiguration.armTenantId `
-        -subscriptionId $pipelineConfiguration.armSubscriptionId `
-        -clientId $pipelineConfiguration.armClientId `
-        -clientSecret $pipelineConfiguration.armClientSecret
+        -tenantId $parentConfiguration.armTenantId `
+        -subscriptionId $parentConfiguration.armSubscriptionId `
+        -clientId $parentConfiguration.armClientId `
+        -clientSecret $parentConfiguration.armClientSecret
 }
 
-Describe $pipelineConfiguration.displayName -ForEach $discovery {
+Describe $parentConfiguration.displayName -ForEach $discovery {
 
     BeforeAll {
-        $renewalStartDate = $pipelineConfiguration.dateTime.AddDays($_.certificateRenewalBeforeInDays)    
+        $renewalStartDate = $parentConfiguration.dateTime.AddDays($_.certificateRenewalBeforeInDays)    
     }
 
     Context "Gateway: <_.resourceGroupName>/<_.resourceName>" -ForEach $gateways {
@@ -77,12 +77,12 @@ Describe $pipelineConfiguration.displayName -ForEach $discovery {
             $resource.ProvisioningState | Should -Be "Succeeded"
         }
 
-        It "The certificate expiry date should be later than $($renewalStartDate.ToString($pipelineConfiguration.dateFormat))" {    
+        It "The certificate expiry date should be later than $($renewalStartDate.ToString($parentConfiguration.dateFormat))" {    
             $certificateExpiryDate | Should -BeGreaterThan $renewalStartDate
         }
 
         AfterAll {
-            Write-Information -MessageData ("`nApplication Gateway certificate expiry date: {0}`n" -f $certificateExpiryDate.ToString($pipelineConfiguration.dateFormat))
+            Write-Information -MessageData ("`nApplication Gateway certificate expiry date: {0}`n" -f $certificateExpiryDate.ToString($parentConfiguration.dateFormat))
 
             Clear-Variable -Name "resourceGroupName"
             Clear-Variable -Name "resourceName"

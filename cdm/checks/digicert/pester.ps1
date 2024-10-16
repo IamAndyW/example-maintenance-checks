@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory = $true)]
-    [hashtable] $pipelineConfiguration
+    [hashtable] $parentConfiguration
 )
 
 BeforeDiscovery {
@@ -9,32 +9,32 @@ BeforeDiscovery {
     . ../../../powershell/functions/Install-PowerShellModules.ps1
     Install-PowerShellModules -moduleNames ("powershell-yaml")
     
-    $checkConfigurationFilename = $pipelineConfiguration.configurationFilename
+    $configurationFilename = $parentConfiguration.configurationFilename
 
     # loading check configuration
-    if (-not (Test-Path -Path $checkConfigurationFilename)) {
-        throw ("Missing configuration file: {0}" -f $checkConfigurationFilename)
+    if (-not (Test-Path -Path $configurationFilename)) {
+        throw ("Missing configuration file: {0}" -f $configurationFilename)
     }
 
-    $checkConfiguration = Get-Content -Path $checkConfigurationFilename | ConvertFrom-Yaml
+    $checkConfiguration = Get-Content -Path $configurationFilename | ConvertFrom-Yaml
 
     # building the discovery objects
     $discovery = $checkConfiguration
 }
 
-Describe $pipelineConfiguration.displayName -ForEach $discovery {
+Describe $parentConfiguration.displayName -ForEach $discovery {
 
     BeforeAll {
         $parameters = @{
             "method" = "GET"
             "headers" = @{
                 "content-type" = "application/json"
-                "X-DC-DEVKEY" = $pipelineConfiguration.digicertAPIkey
+                "X-DC-DEVKEY" = $parentConfiguration.digicertAPIkey
             }
         }
 
         $baseURL = $_.baseURL
-        $organisationId = $pipelineConfiguration.digicertOrganisationId
+        $organisationId = $parentConfiguration.digicertOrganisationId
 
         $organisationURL = ("{0}/{1}" -f $baseURL, ("organization/{0}" -f $organisationId))
         $reportURL = ("{0}/{1}" -f $baseURL, "report")
@@ -63,7 +63,7 @@ Describe $pipelineConfiguration.displayName -ForEach $discovery {
             $response = Invoke-RestMethod @parameters
 
             ($response.validations | Where-Object {$_.type -eq "ov"}).validated_until |
-                Should -BeGreaterThan $pipelineConfiguration.dateTime.AddDays($_.ordersExpiringRenewBeforeInDays)
+                Should -BeGreaterThan $parentConfiguration.dateTime.AddDays($_.ordersExpiringRenewBeforeInDays)
         }
 
         AfterEach {

@@ -10,7 +10,7 @@ Push-Location -Path $PSScriptRoot
 . ../../../powershell/functions/New-ADOWorkItem.ps1
 
 # // START check for existing Product Backlog Item //
-$script:wiTitle = ("{0}: {1} {2} FAILED" -f $(("{0} {1}" -f $adoConfiguration.clientName, "CDM Checks")), $env:SYSTEM_STAGEDISPLAYNAME, $env:SYSTEM_PHASEDISPLAYNAME)
+$script:wiTitle = ("{0}: {1} {2} FAILED" -f $(("{0} {1}" -f $parentConfiguration.clientName, "CDM Checks")), $env:SYSTEM_STAGEDISPLAYNAME, $env:SYSTEM_PHASEDISPLAYNAME)
 
 $script:wiPBIQuery = (
     "Select [System.Id],
@@ -25,7 +25,7 @@ $script:wiPBIQuery = (
     AND [State] <> 'Removed'" -f $wiTitle
 )
 
-$script:wiPBIs = Find-ADOWorkItemsByQuery -baseURL $adoConfiguration.baseUrl -accessToken $adoConfiguration.accessToken -wiQuery $wiPBIQuery
+$script:wiPBIs = Find-ADOWorkItemsByQuery -baseURL $parentConfiguration.baseUrl -accessToken $parentConfiguration.accessToken -wiQuery $wiPBIQuery
 # // END check for existing Product Backlog Item //
 
 if ($wiPBIs.workItems.Count -eq 0) {
@@ -36,12 +36,12 @@ if ($wiPBIs.workItems.Count -eq 0) {
     . ../../../powershell/functions/Install-PowerShellModules.ps1
     Install-PowerShellModules -moduleNames ("powershell-yaml")
 
-    $script:parentMappings = (Get-Content -Path $adoConfiguration.configurationFilename |
-        ConvertFrom-Yaml).($adoConfiguration.action).parentMappings |
-            Where-Object {$_.clientName -eq $adoConfiguration.clientName}
+    $script:parentMappings = (Get-Content -Path $parentConfiguration.configurationFilename |
+        ConvertFrom-Yaml).($parentConfiguration.action).parentMappings |
+            Where-Object {$_.clientName -eq $parentConfiguration.clientName}
 
     if ($null -eq $parentMappings) {
-        throw ("Missing the '{0}' configuration for the action '{1}' and client '{2}'" -f "parentMappings", $adoConfiguration.action, $adoConfiguration.clientName)
+        throw ("Missing the '{0}' configuration for the action '{1}' and client '{2}'" -f "parentMappings", $parentConfiguration.action, $parentConfiguration.clientName)
     }
 
     $script:wiParentQuery = (
@@ -58,10 +58,10 @@ if ($wiPBIs.workItems.Count -eq 0) {
                 AND [Source].[System.Title] = '{0}'
                 AND [System.Links.LinkType] = 'System.LinkTypes.Hierarchy-Reverse'
                 AND [Target].[System.Title] = '{1}'
-            )" -f $parentMappings.($adoConfiguration.checkName), $adoConfiguration.clientName
+            )" -f $parentMappings.($parentConfiguration.checkName), $parentConfiguration.clientName
     )
 
-    $script:wiParent = (Find-ADOWorkItemsByQuery -baseURL $adoConfiguration.baseUrl -accessToken $adoConfiguration.accessToken -wiQuery $wiParentQuery).workItemRelations.source
+    $script:wiParent = (Find-ADOWorkItemsByQuery -baseURL $parentConfiguration.baseUrl -accessToken $parentConfiguration.accessToken -wiQuery $wiParentQuery).workItemRelations.source
     # // STOP discover work item parent //
 
     # // START creating new PBI //
@@ -122,13 +122,13 @@ if ($wiPBIs.workItems.Count -eq 0) {
         }
     )
 
-    $script:newWI = New-ADOWorkItem -baseURL $adoConfiguration.baseUrl -accessToken $adoConfiguration.accessToken -wiType "Product Backlog Item" -payload $payload
+    $script:newWI = New-ADOWorkItem -baseURL $parentConfiguration.baseUrl -accessToken $parentConfiguration.accessToken -wiType "Product Backlog Item" -payload $payload
 
-    Write-Information -MessageData ("Work item id '{0}' linked to parent '{1}' with id '{2}'" -f $newWI.id, $adoConfiguration.clientName, $wiParent.id)
+    Write-Information -MessageData ("Work item id '{0}' linked to parent '{1}' with id '{2}'" -f $newWI.id, $parentConfiguration.clientName, $wiParent.id)
     # // STOP creating new PBI //
 } else {
     Write-Warning ("Work item with title '{0}' already exists and is not closed or removed" -f $wiTitle)
-    Write-Warning ("Please consider skipping this check by updating the pipeline environment variable '{0}' in the file: {1}/{2}/{3}" -f "cdm_check_skip_until", $env:CDM_CHECKS_DIRECTORY, $adoConfiguration.checkName , "pipeline-variables.yml")
+    Write-Warning ("Please consider skipping this check by updating the pipeline environment variable '{0}' in the file: {1}/{2}/{3}" -f "check_skip_until", $env:CDM_CHECKS_DIRECTORY, $parentConfiguration.checkName , "pipeline-variables.yml")
 
     Write-Information -MessageData ("Work item Id: {0}" -f $wiPBIs.workItems.id)
 }
