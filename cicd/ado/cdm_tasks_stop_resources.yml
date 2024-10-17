@@ -14,6 +14,25 @@ parameters:
   - name: stages
     type: object
     default:
+      - name: build_agents
+        displayName: 'Build Agents'
+        dependsOn: ['build']
+        condition: and(succeeded(), eq(variables.isMainBranch, true))
+        variableGroups:
+          - azure-sp-creds
+        jobs:
+          - name: azure_virtual_machine
+            displayName: 'Azure Virtual Machine'
+            dependsOn: []
+            variableGroups:
+            tasks:
+              installTaskctl: false
+              action: StopVM
+              powershellCheckEnvVariables:
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+                ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
       - name: nonprod
         displayName: 'NONPROD'
         dependsOn: ['build']

@@ -7,7 +7,7 @@ Push-Location -Path $PSScriptRoot
 # installing dependencies
 # to avoid a potential clash with the YamlDotNet libary always load the module 'powershell-yaml' last
 . ../../../powershell/functions/Install-PowerShellModules.ps1
-Install-PowerShellModules -moduleNames ("Az.Aks", "powershell-yaml")
+Install-PowerShellModules -moduleNames ("Az.Accounts", "Az.Compute", "powershell-yaml")
 
 # task configuration
 $script:configurationFilename = $parentConfiguration.configurationFilename
@@ -21,7 +21,7 @@ if (-not (Test-Path -Path $configurationFilename)) {
 $script:taskConfiguration = Get-Content -Path $configurationFilename | ConvertFrom-Yaml
 
 # running task against resource
-$script:clusters = ($taskConfiguration.stages | Where-Object {$_.name -eq $stageName}).clusters
+$script:vms = ($taskConfiguration.stages | Where-Object {$_.name -eq $stageName}).vms
 
 if ($parentConfiguration.action -notin $taskConfiguration.allowedActions) {
     throw ("Action '{0}' not valid for the task '{1}'. Check task configuration file for a list of allowed actions '{2}/{3}'" -f $parentConfiguration.action, $parentConfiguration.displayName, $parentConfiguration.taskDirectory, $configurationFilename)
@@ -42,13 +42,13 @@ Connect-Azure `
     -clientSecret $parentConfiguration.armClientSecret
 
 # iterating over the resources
-foreach ($cluster in $clusters) {
-    $script:resourceGroupName = $cluster.resourceGroupName
-    $script:resourceName = $cluster.resourceName
+foreach ($vm in $vms) {
+    $script:resourceGroupName = $vm.resourceGroupName
+    $script:resourceName = $vm.resourceName
 
     Write-Information -MessageData ("`nProcessing Resource '{0}' in Resource Group '{1}'" -f $resourceName, $resourceGroupName)
 
-    $script:resource = Get-AzAksCluster -ResourceGroupName $resourceGroupName -Name $resourceName
+    $script:resource = Get-AzVM -ResourceGroupName $resourceGroupName -Name $resourceName
 
     if ($resource.tags.keys -contains $parentConfiguration.configurationResourceTagName) {
 
@@ -62,25 +62,27 @@ foreach ($cluster in $clusters) {
         if ($taskConfiguration.enabled -eq "true") {      
             Write-Information -MessageData ("Action '{0}'`n" -f $parentConfiguration.action)
 
+            $script:resourceStatus = Get-AzVM -ResourceGroupName $resourceGroupName -Name $resourceName -Status
+
             switch ($parentConfiguration.action) {
-                "StartAKS" {
-                    if (($resource.ProvisioningState -eq "Succeeded") -and ($resource.PowerState.Code -eq "Stopped")) {
-                        Start-AzAksCluster -ResourceGroupName $resourceGroupName -Name $resourceName
+                "StartVM" {
+                    if (($resource.ProvisioningState -eq "succeeded") -and ($resourceStatus.statuses[1].code -eq "PowerState/deallocated" -or $resourceStatus.statuses[1].code -eq "PowerState/stopped")) {
+                        Start-AzVM -ResourceGroupName $resourceGroupName -Name $resourceName
                     } else {
-                        Write-Warning ("Resource is not in a valid state to perform the action '{0}'. ProvisioningState '{1}' and PowerState '{2}'" -f $parentConfiguration.action, $resource.ProvisioningState, $resource.PowerState.Code)
+                        Write-Warning ("Resource is not in a valid state to perform the action '{0}'. ProvisioningState '{1}' and PowerState '{2}'" -f $parentConfiguration.action, $resource.ProvisioningState, $resourceStatus.statuses[1].code)
                         Write-Host "##vso[task.complete result=SucceededWithIssues]Skipping CDM task"
                     }
                 }
-                "StopAKS" {
-                    if (($resource.ProvisioningState -eq "Succeeded") -and ($resource.PowerState.Code -eq "Running")) {
-                        Stop-AzAksCluster -ResourceGroupName $resourceGroupName -Name $resourceName
+                "StopVM" {
+                    if  (($resource.ProvisioningState -eq "succeeded") -and ($resourceStatus.statuses[1].code -eq "PowerState/running")) {
+                        Stop-AzVM -ResourceGroupName $resourceGroupName -Name $resourceName -Force
                     } else {
-                        Write-Warning ("Resource is not in a valid state to perform the action '{0}'. ProvisioningState '{1}' and PowerState '{2}'" -f $parentConfiguration.action, $resource.ProvisioningState, $resource.PowerState.Code)
+                        Write-Warning ("Resource is not in a valid state to perform the action '{0}'. ProvisioningState '{1}' and PowerState '{2}'" -f $parentConfiguration.action, $resource.ProvisioningState, $resourceStatus.statuses[1].code)
                         Write-Host "##vso[task.complete result=SucceededWithIssues]Skipping CDM task"
                     }
                 }
             }
-
+            
             foreach ($script:item in $tagConfiguration) {
                 $script:keyValue = $item.Split('=')
                 $taskConfiguration.Remove($keyValue[0])
