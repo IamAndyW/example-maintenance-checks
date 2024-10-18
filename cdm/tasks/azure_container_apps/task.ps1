@@ -7,7 +7,7 @@ Push-Location -Path $PSScriptRoot
 # installing dependencies
 # to avoid a potential clash with the YamlDotNet libary always load the module 'powershell-yaml' last
 . ../../../powershell/functions/Install-PowerShellModules.ps1
-Install-PowerShellModules -moduleNames ("Az.Aks", "powershell-yaml")
+Install-PowerShellModules -moduleNames ("Az.App", "powershell-yaml")
 
 # task configuration
 $script:configurationFilename = $parentConfiguration.configurationFilename
@@ -48,11 +48,12 @@ foreach ($target in $targets) {
 
     Write-Information -MessageData ("`nProcessing Resource '{0}' in Resource Group '{1}'" -f $resourceName, $resourceGroupName)
 
-    $script:resource = Get-AzAksCluster -ResourceGroupName $resourceGroupName -Name $resourceName
+    $script:resource = Get-AzContainerApp -ResourceGroupName $resourceGroupName -Name $resourceName
+    $script:resourceTags = $resource.tag | ConvertFrom-Json
 
-    if ($resource.tags.keys -contains $parentConfiguration.configurationResourceTagName) {
+    if (-not $null -eq $resourceTags.($parentConfiguration.configurationResourceTagName)) {
 
-        $script:tagConfiguration = $resource.tags.($parentConfiguration.configurationResourceTagName).Split(',')
+        $script:tagConfiguration = $resourceTags.($parentConfiguration.configurationResourceTagName).Split(',')
     
         foreach ($script:item in $tagConfiguration) {
             $script:keyValue = $item.Split('=')
@@ -63,24 +64,24 @@ foreach ($target in $targets) {
             Write-Information -MessageData ("Action '{0}'`n" -f $parentConfiguration.action)
 
             switch ($parentConfiguration.action) {
-                "StartAKS" {
-                    if (($resource.ProvisioningState -eq "Succeeded") -and ($resource.PowerState.Code -eq "Stopped")) {
-                        Start-AzAksCluster -ResourceGroupName $resourceGroupName -Name $resourceName
+                "StartCA" {
+                    if (($resource.ProvisioningState -eq "Succeeded")) {
+                        Start-AzContainerApp -ResourceGroupName $resourceGroupName -Name $resourceName
                     } else {
-                        Write-Warning ("Resource is not in a valid state to perform the action '{0}'. ProvisioningState '{1}' and PowerState '{2}'" -f $parentConfiguration.action, $resource.ProvisioningState, $resource.PowerState.Code)
+                        Write-Warning ("Resource is not in a valid state to perform the action '{0}'. ProvisioningState '{1}'" -f $parentConfiguration.action, $resource.ProvisioningState)
                         Write-Host "##vso[task.complete result=SucceededWithIssues]Skipping CDM task"
                     }
                 }
-                "StopAKS" {
-                    if (($resource.ProvisioningState -eq "Succeeded") -and ($resource.PowerState.Code -eq "Running")) {
-                        Stop-AzAksCluster -ResourceGroupName $resourceGroupName -Name $resourceName
+                "StopCA" {
+                    if (($resource.ProvisioningState -eq "Succeeded")) {
+                        Stop-AzContainerApp -ResourceGroupName $resourceGroupName -Name $resourceName
                     } else {
-                        Write-Warning ("Resource is not in a valid state to perform the action '{0}'. ProvisioningState '{1}' and PowerState '{2}'" -f $parentConfiguration.action, $resource.ProvisioningState, $resource.PowerState.Code)
+                        Write-Warning ("Resource is not in a valid state to perform the action '{0}'. ProvisioningState '{1}'" -f $parentConfiguration.action, $resource.ProvisioningState)
                         Write-Host "##vso[task.complete result=SucceededWithIssues]Skipping CDM task"
                     }
                 }
             }
-
+            
             foreach ($script:item in $tagConfiguration) {
                 $script:keyValue = $item.Split('=')
                 $taskConfiguration.Remove($keyValue[0])

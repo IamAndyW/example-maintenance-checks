@@ -1,0 +1,10 @@
+allowedActions:
+  - StartCA
+  - StopCA
+stages:
+  - name: nonprod
+    targets:
+      - resourceGroupName: ensono-stacks-dev-uks-aca-netcore-api
+        resourceName: aca-netcore-api
+      - resourceGroupName: ensono-stacks-dev-uks-aca-netcore-api-cqrs
+        resourceName: aca-netcore-api-cqrs

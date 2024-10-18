@@ -28,10 +28,8 @@ if ($skipUntilDateTime -gt $dateTime) {
         displayName = $env:SYSTEM_PHASEDISPLAYNAME
         dateFormat = $env:CDM_DATE_FORMAT
         dateTime = $dateTime
-        date = $dateTime.ToString()
         stageName = $env:SYSTEM_STAGENAME
     }
-
 
     & $checkFileName
 } else {

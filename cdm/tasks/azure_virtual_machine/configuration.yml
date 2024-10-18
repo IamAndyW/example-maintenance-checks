@@ -3,7 +3,7 @@ allowedActions:
   - StopVM
 stages:
   - name: build_agents
-    vms:
+    targets:
       - resourceGroupName: stacks-build-agents
         resourceName: adoagent-linux-amd64
       - resourceGroupName: stacks-build-agents

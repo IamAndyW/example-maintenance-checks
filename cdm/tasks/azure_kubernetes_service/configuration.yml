@@ -3,10 +3,10 @@ allowedActions:
   - StopAKS
 stages:
   - name: nonprod
-    clusters:
+    targets:
       - resourceGroupName: ed-stacks-nonprod-euw-core
         resourceName: ed-stacks-nonprod-euw-core
   - name: prod
-    clusters:
+    targets:
       - resourceGroupName: ed-stacks-prod-euw-core
         resourceName: ed-stacks-prod-euw-core

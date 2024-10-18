@@ -7,7 +7,7 @@ Push-Location -Path $PSScriptRoot
 # installing dependencies
 # to avoid a potential clash with the YamlDotNet libary always load the module 'powershell-yaml' last
 . ../../../powershell/functions/Install-PowerShellModules.ps1
-Install-PowerShellModules -moduleNames ("Az.Accounts", "Az.Compute", "powershell-yaml")
+Install-PowerShellModules -moduleNames ("Az.Compute", "powershell-yaml")
 
 # task configuration
 $script:configurationFilename = $parentConfiguration.configurationFilename
@@ -21,7 +21,7 @@ if (-not (Test-Path -Path $configurationFilename)) {
 $script:taskConfiguration = Get-Content -Path $configurationFilename | ConvertFrom-Yaml
 
 # running task against resource
-$script:vms = ($taskConfiguration.stages | Where-Object {$_.name -eq $stageName}).vms
+$script:targets = ($taskConfiguration.stages | Where-Object {$_.name -eq $stageName}).targets
 
 if ($parentConfiguration.action -notin $taskConfiguration.allowedActions) {
     throw ("Action '{0}' not valid for the task '{1}'. Check task configuration file for a list of allowed actions '{2}/{3}'" -f $parentConfiguration.action, $parentConfiguration.displayName, $parentConfiguration.taskDirectory, $configurationFilename)
@@ -41,10 +41,10 @@ Connect-Azure `
     -clientId $parentConfiguration.armClientId `
     -clientSecret $parentConfiguration.armClientSecret
 
-# iterating over the resources
-foreach ($vm in $vms) {
-    $script:resourceGroupName = $vm.resourceGroupName
-    $script:resourceName = $vm.resourceName
+# iterating over the target resources
+foreach ($target in $targets) {
+    $script:resourceGroupName = $target.resourceGroupName
+    $script:resourceName = $target.resourceName
 
     Write-Information -MessageData ("`nProcessing Resource '{0}' in Resource Group '{1}'" -f $resourceName, $resourceGroupName)
 
