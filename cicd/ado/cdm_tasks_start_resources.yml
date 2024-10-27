@@ -83,6 +83,18 @@ parameters:
                 ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
                 ARM_CLIENT_ID: $(ARM_CLIENT_ID)
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
+          - name: azure_container_apps
+            displayName: 'Azure Container Apps'
+            dependsOn: []
+            variableGroups:
+            tasks:
+              installTaskctl: false
+              action: StartCA
+              powershellCheckEnvVariables:
+                ARM_TENANT_ID: $(ARM_TENANT_ID)
+                ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
+                ARM_CLIENT_ID: $(ARM_CLIENT_ID)
+                ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
 
 variables:
   - template: templates/variables/cdm_pipeline_variables.yml

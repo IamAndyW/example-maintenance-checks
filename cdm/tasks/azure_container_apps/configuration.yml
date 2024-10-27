@@ -4,7 +4,13 @@ allowedActions:
 stages:
   - name: nonprod
     targets:
-      - resourceGroupName: ensono-stacks-dev-uks-aca-netcore-api
+      - resourceGroupName: ensono-stacks-dev-euw-aca-netcore-api
         resourceName: aca-netcore-api
-      - resourceGroupName: ensono-stacks-dev-uks-aca-netcore-api-cqrs
+      - resourceGroupName: ensono-stacks-dev-euw-aca-netcore-api-cqrs
+        resourceName: aca-netcore-api-cqrs
+  - name: prod
+    targets:
+      - resourceGroupName: ensono-stacks-prod-euw-aca-netcore-api
+        resourceName: aca-netcore-api
+      - resourceGroupName: ensono-stacks-prod-euw-aca-netcore-api-cqrs
         resourceName: aca-netcore-api-cqrs
