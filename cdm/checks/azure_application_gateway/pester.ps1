@@ -88,8 +88,8 @@ Describe $parentConfiguration.displayName -ForEach $discovery {
             Clear-Variable -Name "resourceName"
             Clear-Variable -Name "resource"
             Clear-Variable -Name "keyVaultSecretId"
-            Clear-Variable -Name "certificateBytes" -ErrorAction Continue
-            Clear-Variable -Name "p7b" -ErrorAction Continue
+            Clear-Variable -Name "certificateBytes" -ErrorAction SilentlyContinue
+            Clear-Variable -Name "p7b" -ErrorAction SilentlyContinue
             Clear-Variable -Name "certificateExpiryDate"
         }
     }
