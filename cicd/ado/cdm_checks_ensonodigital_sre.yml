@@ -29,7 +29,7 @@ parameters:
               powershellCheckEnvVariables:
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
-              createADOWorkItem: true
+              createADOWorkItem: false
           - name: github
             displayName: 'GitHub'
             dependsOn: []
@@ -73,7 +73,7 @@ parameters:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
-              createADOWorkItem: true
+              createADOWorkItem: false
           - name: azure_application_gateway
             displayName: 'Azure Application Gateway'
             dependsOn: []
@@ -87,7 +87,7 @@ parameters:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
-              createADOWorkItem: true
+              createADOWorkItem: false
           - name: aws_elastic_kubernetes_service
             displayName: 'AWS Elastic Kubernetes Service'
             dependsOn: []
@@ -100,7 +100,7 @@ parameters:
                 AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
-              createADOWorkItem: true
+              createADOWorkItem: false
       - name: prod
         displayName: 'PROD'
         dependsOn: ['build']
@@ -121,7 +121,7 @@ parameters:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
-              createADOWorkItem: true
+              createADOWorkItem: false
           - name: azure_application_gateway
             displayName: 'Azure Application Gateway'
             dependsOn: []
@@ -135,7 +135,7 @@ parameters:
                 ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
-              createADOWorkItem: true
+              createADOWorkItem: false
           - name: digicert
             displayName: 'Digicert'
             dependsOn: []
@@ -161,7 +161,7 @@ parameters:
                 AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
               powershellADOEnvVariables:
                 ADO_ACCESS_TOKEN: $(ado_access_token)
-              createADOWorkItem: true
+              createADOWorkItem: false
 
 variables:
   - template: templates/variables/cdm_pipeline_variables.yml
