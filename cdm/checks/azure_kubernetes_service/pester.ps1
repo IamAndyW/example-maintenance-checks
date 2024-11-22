@@ -37,7 +37,8 @@ BeforeAll {
 Describe $parentConfiguration.displayName -ForEach $discovery {
 
     BeforeAll {        
-        $versionThreshold = $_.versionThreshold    
+        $versionThreshold = $_.versionThreshold
+        $excludePreviewVersions = $_.excludePreviewVersions    
     }
 
     Context "Cluster: <_.resourceGroupName>/<_.resourceName>" -ForEach $clusters {
@@ -52,12 +53,17 @@ Describe $parentConfiguration.displayName -ForEach $discovery {
                 throw ("Cannot find resource: '{0}' in resource group: '{1}'" -f $resourceName, $resourceGroupName)
             }
     
-            $currentVersion = $resource.KubernetesVersion
-            
-            $targetVersions = (Get-AzAksVersion -Location $resource.Location |
-            Where-Object {$_.IsPreview -ne $true} | Sort-Object { $_.OrchestratorVersion -as [version] } -Descending).OrchestratorVersion |
-                Select-Object -First $versionThreshold
+            $currentSemver = $resource.KubernetesVersion -as [version]
+            $currentVersion = ("{0}.{1}" -f $currentSemver.Major, $currentSemver.Minor)
 
+            $aksVersions = (Get-AzAksVersion -Location $resource.Location | Where-Object {$_.IsPreview -ne $excludePreviewVersions}).OrchestratorVersion
+
+            $targetVersions = [System.Collections.ArrayList]@()
+            foreach ($aksVersion in $aksVersions) {
+                $semverObject = $aksVersion -as [version]
+                $targetVersions.Add(("{0}.{1}" -f $semverObject.Major, $semverObject.Minor)) | Out-Null
+            }
+            $targetVersions = ($targetVersions | Sort-Object { $_-as [version] } -Unique -Descending | Select-Object -First $versionThreshold)
         }
 
         It "Should have Provisioning State of 'Succeeded'" {
@@ -71,7 +77,7 @@ Describe $parentConfiguration.displayName -ForEach $discovery {
         AfterAll {
             Write-Information -MessageData ("`nCurrent version {0}" -f $currentVersion)
 
-            Write-Information -MessageData("`nTarget versions (n-{0}) for {1}" -f $versionThreshold, $resourceRegion)
+            Write-Information -MessageData("`nTarget versions (n-{0}) for {1}" -f $versionThreshold, $resource.Location)
             foreach ($version in $targetVersions) {
                 Write-Information -MessageData $version
             }

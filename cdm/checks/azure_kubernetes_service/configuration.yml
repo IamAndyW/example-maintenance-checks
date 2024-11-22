@@ -1,5 +1,6 @@
 runbook: https://google.com
 versionThreshold: 2
+excludePreviewVersions: true
 stages:
 - name: nonprod
   clusters:
